@@ -1,0 +1,107 @@
+TinyRadius README
+
+TinyRadius is a simple, small and fast Java Radius library capable of
+sending and receiving Radius packets of all types released under the LGPL.
+
+What you can do with it:
+- send and receive Radius packets (Access-Request, Access-Accept,
+  Access-Reject, Access-Challenge, Accounting-Request, Accounting-Response
+  and others) from within your Java application
+- use PAP and CHAP as authentication types for Access-Request messages
+- attach arbitrary Radius attributes to the packets employing attribute
+  names read from a dictionary file
+- send and receive Radius packets with "Vendor-Specific" attributes
+
+What you cannot do with it:
+- set up a complex Radius server (please use FreeRadius)
+- connect the server to a user database without writing Java code
+  (this library is ment to be plugged in applications and not to be
+  used stand-alone)
+
+TinyRadius comes with small sample applications which show how to integrate
+it as a Radius server and a Radius client.
+
+
+EXAMPLE 1: Sending an Access-Request
+
+1. Create a RadiusClient object with the host name and shared secret
+of the Radius server you wish to contact. You may set additional details
+(port numbers, for example) using methods of this object.
+
+		RadiusClient rc = new RadiusClient(host, shared);
+
+2. Create the Access-Request Radius packet. Pass the user name and
+password in the constructor. The User-Name attribute will be added
+on construction of the object, while the User-Password attribute (PAP)
+or the CHAP-Password and CHAP-Challenge attributes (CHAP) will be
+generated when encoding the packet because the request authenticator of
+the packet is required to encrypt the password.
+
+		AccessRequest ar = new AccessRequest(user, pass);
+		ar.setAuthProtocol(AccessRequest.AUTH_CHAP); // or AUTH_PAP
+		
+3. Set further attributes. Note that TinyRadius resolves the attribute type
+from the given type name and that it converts the IP address and the name
+of the constant (Login-User) to the right values.
+
+		ar.addAttribute("NAS-Identifier", "this.is.my.nas-identifier.de");
+		ar.addAttribute("NAS-IP-Address", "192.168.0.100");
+		ar.addAttribute("Service-Type", "Login-User");
+
+4. Send the packet and receive the response.
+
+		RadiusPacket response = rc.authenticate(ar);
+		if (response.getPacketType() == RadiusPacket.ACCESS_ACCEPT) {
+			...
+
+
+EXAMPLE 2: Authentication made easy
+
+If you do not need to control attribute values, you can just use the
+method authenticate() from the RadiusClient:
+
+		RadiusClient rc = new RadiusClient(host, secret);
+		if (rc.authenticate(userName, password)) {
+			...
+
+
+EXAMPLE 3: How to implement a Radius server
+
+You need to subclass org.tinyradius.util.RadiusServer.
+Provide an implementation for the following methods:
+
+String getSharedSecret(InetAddress client);
+
+	This method should check whether the passed client is allowed to
+	communicate with the Radius server. If this is the case, it should
+	return the shared secret that secures the communication to the client.
+
+String getUserPassword(String userName);
+
+	This method returns the password for the given user. If you have not
+	access to the password (in the case of CHAP) or you need finer control
+	(you want to set attributes for the response packet, for example), you
+	have to override the following method.
+	
+RadiusPacket accessRequestReceived(AccessRequest request);
+RadiusPacket accountingRequestReceived(RadiusPacket request);
+
+	Override this methods for fine control about the way Accounting-Request
+	and Access-Request packets are handled. Just return the Radius packet
+	to be sent as a response or null if the request should be ignored.
+
+After implementing your own server class, you can start and stop the server
+using the methods start() and stop(). For start(), you pass whether the server
+should listen on the auth and/or the acct port. This method spawns new threads.
+
+	RadiusServer server = new MyRadiusServer();
+	server.start(true, true);
+	server.stop();
+
+
+Please do not hesitate to contact me if you have got questions or
+suggestions.
+
+Matthias Wuttke
+post@matthias-wuttke.de
+http://tinyradius.sourceforge.net/

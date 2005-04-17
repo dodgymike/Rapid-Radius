@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<!--
+$Id: build.xml,v 1.1 2005/04/17 14:51:27 wuttke Exp $   
+created 11.04.2005 18:05:36                                                        
+TinyRadius build file
+-->
+<project name="TinyRadius" default="compile">
+	
+	<property name="src" location="src"/>
+	<property name="build" location="build"/>
+	<property name="dist" location="dist"/>
+	<property name="version" value="0.9"/>
+	
+	<target name="init">
+		<tstamp/>
+	    <mkdir dir="${build}"/>
+	</target>
+	
+	<target name="compile" depends="init">
+        <javac srcdir="${src}" destdir="${build}"/>
+    </target>
+
+    <target name="jar" depends="compile">
+	    <mkdir dir="${dist}"/>
+    	<copy file="${src}/org/tinyradius/attribute/dictionary" todir="${build}/org/tinyradius/attribute"/>
+        <jar jarfile="${dist}/TinyRadius-${version}.jar" basedir="${build}"/>
+    </target>
+	
+	<target name="clean">
+		<delete dir="${build}"/>
+	</target>
+	
+	<target name="javadoc">
+		<javadoc destdir="doc/apidoc"
+			access="protected" 
+			use="true" notree="false" nonavbar="false" noindex="false"
+			splitindex="true" author="true" version="true"
+			nodeprecatedlist="false" nodeprecated="false"
+			packagenames="org.tinyradius.packet,org.tinyradius.util,org.tinyradius.test,org.tinyradius.attribute"
+			sourcepath="${src}" classpath="bin"
+			doctitle="TinyRadius: Java Radius Library"
+			additionalparam=" -encoding iso-8859-1 -docencoding iso-8859-1 -charset iso-8859-1"/>
+	</target>
+	
+	<target name="dist" depends="jar">
+		<delete file="${dist}/TinyRadius-${version}.tar.gz"/>
+		<tar tarfile="${dist}/TinyRadius-${version}.tar">
+			<tarfileset dir=".">
+				<exclude name="build/"/>
+				<exclude name="bin/"/>
+			</tarfileset>
+		</tar>
+		<gzip zipfile="${dist}/TinyRadius-${version}.tar.gz" src="${dist}/TinyRadius-${version}.tar"/>
+		<delete file="${dist}/TinyRadius-${version}.tar"/>
+	</target>
+
+</project>
+
