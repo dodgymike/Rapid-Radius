@@ -1,0 +1,6 @@
+TinyRadius Change Log
+
+0.9.1: added commons-logging.jar and varous log messages to
+       the classes RadiusServer/RadiusClient
+       
+0.9:   initial release
