@@ -1,8 +1,8 @@
 /**
- * $Id: RadiusClient.java,v 1.1 2005/04/17 14:51:33 wuttke Exp $
+ * $Id: RadiusClient.java,v 1.2 2005/04/19 10:10:11 wuttke Exp $
  * Created on 09.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 package org.tinyradius.util;
 
@@ -14,6 +14,8 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.tinyradius.packet.AccessRequest;
 import org.tinyradius.packet.AccountingRequest;
 import org.tinyradius.packet.RadiusPacket;
@@ -66,7 +68,14 @@ public class RadiusClient {
 	 */
 	public synchronized RadiusPacket authenticate(AccessRequest request) 
 	throws IOException, RadiusException {
-		return communicate(request, getAuthPort());
+		if (logger.isInfoEnabled())
+			logger.info("send Access-Request packet: " + request);
+		
+		RadiusPacket response = communicate(request, getAuthPort());
+		if (logger.isInfoEnabled())
+			logger.info("received packet: " + response);
+		
+		return response;
 	}
 	
 	/**
@@ -80,7 +89,14 @@ public class RadiusClient {
 	 */
 	public synchronized RadiusPacket account(AccountingRequest request) 
 	throws IOException, RadiusException {
-		return communicate(request, getAcctPort());
+		if (logger.isInfoEnabled())
+			logger.info("send Accounting-Request packet: " + request);
+		
+		RadiusPacket response = communicate(request, getAcctPort());
+		if (logger.isInfoEnabled())
+			logger.info("received packet: " + response);
+		
+		return response;
 	}
 
 	/**
@@ -238,9 +254,14 @@ public class RadiusClient {
 				socket.send(packetOut);
 				socket.receive(packetIn);
 				return makeRadiusPacket(packetIn, request);
-			} catch (IOException ioex){
-				if (i == getRetryCount())
+			} catch (IOException ioex) {
+				if (i == getRetryCount()) {
+					if (logger.isErrorEnabled())
+						logger.error("communication failure, no more retries", ioex);
 					throw ioex;
+				}
+				if (logger.isInfoEnabled())
+					logger.info("communication failure, retry " + i);
             }
         }
 		
@@ -284,5 +305,6 @@ public class RadiusClient {
 	private DatagramSocket socket = null;
 	private int retryCount = 3;
 	private int socketTimeout = 3000;
+	private static Log logger = LogFactory.getLog(RadiusClient.class);
 
 }

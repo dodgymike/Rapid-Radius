@@ -1,8 +1,8 @@
 /**
- * $Id: RadiusServer.java,v 1.1 2005/04/17 14:51:33 wuttke Exp $
+ * $Id: RadiusServer.java,v 1.2 2005/04/19 10:10:11 wuttke Exp $
  * Created on 09.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 package org.tinyradius.util;
 
@@ -18,6 +18,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.tinyradius.packet.AccessRequest;
 import org.tinyradius.packet.AccountingRequest;
 import org.tinyradius.packet.RadiusPacket;
@@ -87,6 +89,7 @@ public abstract class RadiusServer {
 				public void run() {
 					setName("Radius Auth Listener");
 					try {
+						logger.info("starting RadiusAuthListener on port " + getAuthPort());
 						listenAuth();
 					} catch(Exception e) {
 						e.printStackTrace();
@@ -100,6 +103,7 @@ public abstract class RadiusServer {
 				public void run() {
 					setName("Radius Acct Listener");
 					try {
+						logger.info("starting RadiusAcctListener on port " + getAcctPort());
 						listenAcct();
 					} catch(Exception e) {
 						e.printStackTrace();
@@ -113,6 +117,7 @@ public abstract class RadiusServer {
 	 * Stops the server and closes the sockets.
 	 */
 	public void stop() {
+		logger.info("stopping Radius server");
 		if (authSocket != null)
 			authSocket.close();
 		if (acctSocket != null)
@@ -244,13 +249,18 @@ public abstract class RadiusServer {
 				}
 				
 				// check client
-				InetAddress address = packetIn.getAddress();
+				InetAddress address = packetIn.getAddress();				
 				String secret = getSharedSecret(address);
-				if (secret == null)
+				if (secret == null) {
+					if (logger.isInfoEnabled())
+						logger.info("ignoring packet from unknown client " + address);
 					continue;
+				}
 				
 				// parse packet
 				RadiusPacket request = makeRadiusPacket(packetIn, secret);
+				if (logger.isInfoEnabled())
+					logger.info("received packet from " + address + ": " + request);
 				
 				// construct response
 				RadiusPacket response = null;
@@ -262,26 +272,32 @@ public abstract class RadiusServer {
 						if (request instanceof AccessRequest)
 							response = accessRequestReceived((AccessRequest)request);
 						else
-							throw new IOException("unknown Radius packet type: " + request.getPacketType());
+							logger.error("unknown Radius packet type: " + request.getPacketType());
 					} else if (s == acctSocket) {
 						if (request instanceof AccountingRequest)
 							response = accountingRequestReceived((AccountingRequest)request);
 						else
-							throw new IOException("unknown Radius packet type: " + request.getPacketType());
+							logger.error("unknown Radius packet type: " + request.getPacketType());
 					}
-				}
+				} else
+					logger.info("ignore duplicate packet");
 				
 				// send response
 				if (response != null) {
+					if (logger.isInfoEnabled())
+						logger.info("send response: " + response);
 					DatagramPacket packetOut = makeDatagramPacket(response, secret, address, packetIn.getPort(), request);
 					s.send(packetOut);
-				}
+				} else
+					logger.info("no response sent");
 			} catch (SocketTimeoutException ste) {
+				// this is expected behaviour
 			} catch (IOException ioe) {
-				ioe.printStackTrace();
+				// error while reading/writing socket
+				logger.error("communication error", ioe);
 			} catch (RadiusException re) {
 				// malformed packet
-				re.printStackTrace();
+				logger.error("malformed Radius packet", re);
 			}
 		}
 	}
@@ -363,17 +379,18 @@ public abstract class RadiusServer {
 		
 		for (Iterator i = receivedPackets.iterator(); i.hasNext();) {
 			ReceivedPacket p = (ReceivedPacket)i.next();
-			if (p.receiveTime < intervalStart)
+			if (p.receiveTime < intervalStart) {
+				// packet is older than duplicate interval
 				i.remove();
-			else {
+			} else {
 				if (p.address.equals(address) && p.packetIdentifier == packet.getPacketIdentifier()) {
-					// discard duplicate packet
-					//System.out.println("Discard duplicate packet: ID " + packet.getPacketIdentifier() + ", address " + address);
+					// packet is duplicate
 					return true;
 				}
 			}
 		}
 		
+		// add packet to receive list
 		ReceivedPacket rp = new ReceivedPacket();
 		rp.address = address;
 		rp.packetIdentifier = packet.getPacketIdentifier();
@@ -389,6 +406,7 @@ public abstract class RadiusServer {
 	private int socketTimeout = 3000;
 	private List receivedPackets = new LinkedList();
 	private long duplicateInterval = 30000; // 30 s
+	private static Log logger = LogFactory.getLog(RadiusServer.class);
 	
 }
 
