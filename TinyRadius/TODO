@@ -1,7 +1,3 @@
-- logger for RadiusClient / RadiusServer
-  (replace printStackTrace, System.out.println)
-   replace some IOExceptions
-   
 - include vendor ID numbers as string constants in dictionary file
 
 - "Include" directive for dictionary file
