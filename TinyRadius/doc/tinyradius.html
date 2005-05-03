@@ -13,7 +13,7 @@ sending and receiving Radius packets of all types released under the LGPL.</p>
 
 <p><A href="https://sourceforge.net/projects/tinyradius/">SourceForge Project Overview</A> | 
 <A href="apidoc/index.html">JavaDoc API documentation</A> |
-<A href="dist/TinyRadius-0.9.1.tar.gz">Download current release</a></p>
+<A href="dist/TinyRadius-0.9.2.tar.gz">Download current release</a></p>
 
 <h3>What you can do with it:</h3>
 
@@ -100,8 +100,8 @@ Provide an implementation for the following methods:</p>
 	(you want to set attributes for the response packet, for example), you
 	have to override the following method.</p>
 	
-<pre>RadiusPacket accessRequestReceived(AccessRequest request);
-RadiusPacket accountingRequestReceived(RadiusPacket request);</pre>
+<pre>RadiusPacket accessRequestReceived(AccessRequest request, InetAddress client);
+RadiusPacket accountingRequestReceived(RadiusPacket request, InetAddress client);</pre>
 
 <p>	Override this methods for fine control about the way Accounting-Request
 	and Access-Request packets are handled. Just return the Radius packet

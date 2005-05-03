@@ -83,8 +83,8 @@ String getUserPassword(String userName);
 	(you want to set attributes for the response packet, for example), you
 	have to override the following method.
 	
-RadiusPacket accessRequestReceived(AccessRequest request);
-RadiusPacket accountingRequestReceived(RadiusPacket request);
+RadiusPacket accessRequestReceived(AccessRequest request, InetAddress client);
+RadiusPacket accountingRequestReceived(RadiusPacket request, InetAddress client);
 
 	Override this methods for fine control about the way Accounting-Request
 	and Access-Request packets are handled. Just return the Radius packet
