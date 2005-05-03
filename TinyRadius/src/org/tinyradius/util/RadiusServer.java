@@ -1,8 +1,8 @@
 /**
- * $Id: RadiusServer.java,v 1.2 2005/04/19 10:10:11 wuttke Exp $
+ * $Id: RadiusServer.java,v 1.3 2005/05/03 15:17:41 wuttke Exp $
  * Created on 09.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 package org.tinyradius.util;
 
@@ -52,11 +52,12 @@ public abstract class RadiusServer {
 	 * Constructs an answer for an Access-Request packet. Either this
 	 * method or isUserAuthenticated should be overriden.
 	 * @param accessRequest Radius request packet
+	 * @param client address of Radius client
 	 * @return response packet or null if no packet shall be sent
 	 * @exception RadiusException malformed request packet; if this
 	 * exception is thrown, no answer will be sent
 	 */
-	public RadiusPacket accessRequestReceived(AccessRequest accessRequest)
+	public RadiusPacket accessRequestReceived(AccessRequest accessRequest, InetAddress client)
 	throws RadiusException {
 		String plaintext = getUserPassword(accessRequest.getUserName());
 		int type = RadiusPacket.ACCESS_REJECT;
@@ -69,11 +70,12 @@ public abstract class RadiusServer {
 	 * Constructs an answer for an Accounting-Request packet. This method
 	 * should be overriden if accounting is supported.
 	 * @param accountingRequest Radius request packet
+	 * @param client address of Radius client
 	 * @return response packet or null if no packet shall be sent
 	 * @exception RadiusException malformed request packet; if this
 	 * exception is thrown, no answer will be sent
 	 */
-	public RadiusPacket accountingRequestReceived(AccountingRequest accountingRequest) 
+	public RadiusPacket accountingRequestReceived(AccountingRequest accountingRequest, InetAddress client) 
 	throws RadiusException {
 		return new RadiusPacket(RadiusPacket.ACCOUNTING_RESPONSE, accountingRequest.getPacketIdentifier());
 	}
@@ -270,12 +272,12 @@ public abstract class RadiusServer {
 					// handle request packet
 					if (s == authSocket) {
 						if (request instanceof AccessRequest)
-							response = accessRequestReceived((AccessRequest)request);
+							response = accessRequestReceived((AccessRequest)request, address);
 						else
 							logger.error("unknown Radius packet type: " + request.getPacketType());
 					} else if (s == acctSocket) {
 						if (request instanceof AccountingRequest)
-							response = accountingRequestReceived((AccountingRequest)request);
+							response = accountingRequestReceived((AccountingRequest)request, address);
 						else
 							logger.error("unknown Radius packet type: " + request.getPacketType());
 					}

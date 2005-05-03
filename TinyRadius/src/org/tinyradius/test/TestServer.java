@@ -1,8 +1,8 @@
 /**
- * $Id: TestServer.java,v 1.1 2005/04/17 14:51:32 wuttke Exp $
+ * $Id: TestServer.java,v 1.2 2005/05/03 15:17:43 wuttke Exp $
  * Created on 08.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 package org.tinyradius.test;
 
@@ -42,10 +42,10 @@ public class TestServer {
 			}
 			
 			// Adds an attribute to the Access-Accept packet
-			public RadiusPacket accessRequestReceived(AccessRequest accessRequest) 
+			public RadiusPacket accessRequestReceived(AccessRequest accessRequest, InetAddress client) 
 			throws RadiusException {
 				System.out.println("Received Access-Request:\n" + accessRequest);
-				RadiusPacket packet = super.accessRequestReceived(accessRequest);
+				RadiusPacket packet = super.accessRequestReceived(accessRequest, client);
 				if (packet.getPacketType() == RadiusPacket.ACCESS_ACCEPT)
 					packet.addAttribute(new StringAttribute(18, "Welcome " + accessRequest.getUserName() + "!"));
 			
