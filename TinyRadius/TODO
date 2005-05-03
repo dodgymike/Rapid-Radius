@@ -4,3 +4,7 @@
 
 - transparent Vendor-Specific attribute handling
   (as implemented by FreeRadius)
+  
+- enhance build.xml:
+  - auto-upload to website and upload.sf.net
+  - pack distribution to a folder and tar the folder

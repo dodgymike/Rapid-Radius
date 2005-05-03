@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
-$Id: build.xml,v 1.3 2005/05/03 15:30:48 wuttke Exp $   
+$Id: build.xml,v 1.4 2005/05/03 15:33:53 wuttke Exp $   
 created 11.04.2005 18:05:36                                                        
 TinyRadius build file
 -->
@@ -29,8 +29,10 @@ TinyRadius build file
 	
 	<target name="clean">
 		<delete dir="${build}"/>
+		<delete dir="${dist}"/>
+		<delete dir="doc/apidoc"/>
 	</target>
-	
+
 	<target name="javadoc" depends="compile">
 		<javadoc destdir="doc/apidoc"
 			access="protected" 
