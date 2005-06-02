@@ -1,9 +1,9 @@
 /**
- * $Id: RadiusAttribute.java,v 1.1 2005/04/17 14:51:33 wuttke Exp $
+ * $Id: RadiusAttribute.java,v 1.2 2005/06/02 14:22:06 wuttke Exp $
  * Created on 07.04.2005
  * Released under the terms of the LGPL
  * @author Matthias Wuttke
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 package org.tinyradius.attribute;
 
@@ -67,25 +67,8 @@ public class RadiusAttribute {
 		if (attributeType < 0 || attributeType > 255)
 			throw new IllegalArgumentException("attribute type invalid: " + attributeType);
 		this.attributeType = attributeType;
-		setAttributeTypeObject(AttributeTypes.getAttributeType(attributeType));
 	}
 	
-	/**
-	 * Returns the AttributeType object for the type of this attribute.
-	 * @return AttributeType object
-	 */
-	public AttributeType getAttributeTypeObject() {
-		return typeObject;
-	}
-	
-	/**
-	 * Sets the AttributeType object for the type of this attribute.
-	 * @param t AttributeType object
-	 */
-	public void setAttributeTypeObject(AttributeType t) {
-		this.typeObject = t;
-	}
-
 	/**
 	 * Sets the value of the attribute using a string.
 	 * @param value value as a string
@@ -101,6 +84,26 @@ public class RadiusAttribute {
 	 */
 	public String getAttributeValue() {
 		return RadiusUtil.getHexString(getAttributeData());
+	}
+	
+	/**
+	 * Gets the Vendor-Id of the Vendor-Specific attribute this
+	 * attribute belongs to. Returns -1 if this attribute is not
+	 * a sub attribute of a Vendor-Specific attribute.
+	 * @return vendor ID
+	 */
+	public int getVendorId() {
+		return vendorId;
+	}
+	
+	/**
+	 * Sets the Vendor-Id of the Vendor-Specific attribute this
+	 * attribute belongs to. The default value of -1 means this attribute
+	 * is not a sub attribute of a Vendor-Specific attribute.
+	 * @param vendorId vendor ID
+	 */	
+	public void setVendorId(int vendorId) {
+		this.vendorId = vendorId;
 	}
 	
 	/**
@@ -141,7 +144,33 @@ public class RadiusAttribute {
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
-		return typeObject.getName() + ": " + getAttributeValue();
+		String name;
+		
+		// determine attribute name
+		AttributeType at = getAttributeTypeObject();
+		if (at != null)
+			name = at.getName();
+		else if (getVendorId() != -1)
+			name = "Unknown-Sub-Attribute-" + getAttributeType();
+		else
+			name = "Unknown-Attribute-" + getAttributeType();
+		
+		// indent sub attributes
+		if (getVendorId() != -1)
+			name = "  " + name;
+		
+		return name + ": " + getAttributeValue();
+	}
+	
+	/**
+	 * Retrieves an AttributeType object for this attribute.
+	 * @return AttributeType object for (sub-)attribute or null
+	 */
+	public AttributeType getAttributeTypeObject() {
+		if (getVendorId() != -1)
+			return AttributeTypes.getVendorSpecificAttributeType(getVendorId(), getAttributeType());
+		else
+			return AttributeTypes.getAttributeType(getAttributeType());
 	}
 	
 	/**
@@ -150,19 +179,38 @@ public class RadiusAttribute {
 	 * @return RadiusAttribute object
 	 */
 	public static RadiusAttribute createRadiusAttribute(int type) {
-		AttributeType at = AttributeTypes.getAttributeType(type);
+		RadiusAttribute attribute = new RadiusAttribute();
+		
 		try {
-			RadiusAttribute attribute = (RadiusAttribute)at.getType().newInstance();
-			attribute.setAttributeType(type);
-			return attribute;
-		} catch (InstantiationException e) {
-			// use generic class instead
-			return new RadiusAttribute();
-		} catch (IllegalAccessException f) {
-			// use generic class instead
-			return new RadiusAttribute();
+			AttributeType at = AttributeTypes.getAttributeType(type);
+			if (at != null && at.getAttributeClass() != null)
+				attribute = (RadiusAttribute)at.getAttributeClass().newInstance();
+		} catch (Exception e) {
 		}
 		
+		attribute.setAttributeType(type);
+		return attribute;
+	}
+	
+	/**
+	 * Creates a new RadiusAttribute object meant to be used as a sub-attribute.
+	 * @param vendorId vendor ID
+	 * @param typeCode type code
+	 * @return RadiusAttribute object
+	 */
+	public static RadiusAttribute createSubAttribute(int vendorId, int typeCode) {
+		RadiusAttribute attribute = new RadiusAttribute();
+
+		try {
+			AttributeType at = AttributeTypes.getVendorSpecificAttributeType(vendorId, typeCode);
+			if (at != null && at.getAttributeClass() != null)
+				attribute = (RadiusAttribute)at.getAttributeClass().newInstance();
+		} catch (Exception e) {
+		}
+		
+		attribute.setAttributeType(typeCode);
+		attribute.setVendorId(vendorId);
+		return attribute;
 	}
 	
 	/**
@@ -171,13 +219,13 @@ public class RadiusAttribute {
 	private int attributeType = -1;
 	
 	/**
+	 * Vendor ID, only for sub-attributes of Vendor-Specific attributes.
+	 */
+	private int vendorId = -1;
+	
+	/**
 	 * Attribute data
 	 */
 	private byte[] attributeData = null;
-	
-	/**
-	 * Attribute type object, may be null!
-	 */
-	private AttributeType typeObject = null;
 	
 }

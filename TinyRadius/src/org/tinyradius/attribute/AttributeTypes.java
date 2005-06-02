@@ -1,8 +1,8 @@
 /**
- * $Id: AttributeTypes.java,v 1.1 2005/04/17 14:51:33 wuttke Exp $
+ * $Id: AttributeTypes.java,v 1.2 2005/06/02 14:22:06 wuttke Exp $
  * Created on 08.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 package org.tinyradius.attribute;
 
@@ -27,11 +27,7 @@ public class AttributeTypes {
     public static AttributeType getAttributeType(int type) {
     	if (type < 1 || type > 255)
     		throw new IllegalArgumentException("invalid attribute type");
-    	AttributeType at = null;
-   		at = (AttributeType)attributeTypesByCode.get(new Integer(type));
-    	if (at == null)
-    		at = new AttributeType(type, "Unknown-Attribute-" + type, RadiusAttribute.class);
-    	return at;
+    	return (AttributeType)attributeTypesByCode.get(new Integer(type));
     }
     
 	/**
@@ -52,7 +48,7 @@ public class AttributeTypes {
     	AttributeType at = getAttributeType(name);
     	if (at == null)
     		throw new IllegalArgumentException("attribute '" + name + "' not found");
-    	return at.getCode();
+    	return at.getTypeCode();
     }
     
     /**
@@ -62,9 +58,9 @@ public class AttributeTypes {
      * @param type vendor sub-attribute type code
      * @return VendorAttributeType object or null
      */
-    public static VendorAttributeType getVendorSpecificAttributeType(int vendorId, int type) {
+    public static AttributeType getVendorSpecificAttributeType(int vendorId, int type) {
     	String key = Integer.toString(vendorId) + "-" + Integer.toString(type);
-    	return (VendorAttributeType)attributeTypesByVendorCode.get(key);
+    	return (AttributeType)attributeTypesByVendorCode.get(key);
     }
     
     /**
@@ -119,8 +115,15 @@ public class AttributeTypes {
     				int code = Integer.parseInt(tok.nextToken());
     				String typeStr = tok.nextToken().trim();
 
+    				if (attributeTypesByName.containsKey(name))
+    					throw new IOException("duplicate attribute name: " + name + ", line: " + lineNum);
+
     				// translate type to class
-    				Class type = getAttributeTypeClass(code, typeStr);
+    				Class type;
+    				if (code == VendorSpecificAttribute.VENDOR_SPECIFIC)
+    					type = VendorSpecificAttribute.class;
+    				else
+    					type = getAttributeTypeClass(code, typeStr);
     				
     				// create and cache object
     				AttributeType at = new AttributeType(code, name, type);
@@ -136,7 +139,7 @@ public class AttributeTypes {
     				String valStr = tok.nextToken().trim();
     				AttributeType at = getAttributeType(typeName);
     				if (at == null)
-    					throw new IOException("unknown attribute type: " + typeName + " line: " + lineNum);
+    					throw new IOException("unknown attribute type: " + typeName + ", line: " + lineNum);
     				else
     					at.addEnumerationValue(Integer.parseInt(valStr), enumName);
     			} else if (lineType.equalsIgnoreCase("VENDORATTR")) {
@@ -148,8 +151,13 @@ public class AttributeTypes {
     				String name = tok.nextToken().trim();
     				int code = Integer.parseInt(tok.nextToken().trim());
     				String typeStr = tok.nextToken().trim();
+
+    				if (attributeTypesByName.containsKey(name))
+    					throw new IOException("duplicate attribute name: " + name + ", line: " + lineNum);
+
     				Class type = getAttributeTypeClass(code, typeStr);
-    				VendorAttributeType at = new VendorAttributeType(Integer.parseInt(vendor), code, name, type);
+    				
+    				AttributeType at = new AttributeType(Integer.parseInt(vendor), code, name, type);
     				attributeTypesByName.put(name, at);
     				attributeTypesByVendorCode.put(vendor + "-" + code, at);
     			} else
@@ -176,8 +184,6 @@ public class AttributeTypes {
 			type = IntegerAttribute.class;
 		else if (typeStr.equalsIgnoreCase("ipaddr"))
 			type = IpAttribute.class;
-		if (attributeType == VendorSpecificAttribute.VENDOR_SPECIFIC)
-			type = VendorSpecificAttribute.class;
 		return type;
     }
     

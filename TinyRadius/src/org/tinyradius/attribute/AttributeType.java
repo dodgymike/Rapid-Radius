@@ -1,12 +1,12 @@
 /**
- * $Id: AttributeType.java,v 1.1 2005/04/17 14:51:33 wuttke Exp $
+ * $Id: AttributeType.java,v 1.2 2005/06/02 14:22:06 wuttke Exp $
  * Copyright by teuto.net Netzdienste GmbH 2005. All rights reserved.
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation. Commercial licenses also available.
  * See the accompanying file LICENSE for details.
  * @author Matthias Wuttke
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 package org.tinyradius.attribute;
 
@@ -26,27 +26,41 @@ public class AttributeType {
 	 * @param type
 	 */
 	public AttributeType(int code, String name, Class type) {
-		setCode(code);
+		setTypeCode(code);
 		setName(name);
-		setType(type);
+		setAttributeClass(type);
 	}
 	
+	/**
+	 * Constructs a Vendor-Specific sub-attribute type.
+	 * @param vendor vendor ID
+	 * @param code sub-attribute type
+	 * @param name sub-attribute name
+	 * @param type sub-attribute class
+	 */
+	public AttributeType(int vendor, int code, String name, Class type) {
+		setTypeCode(code);
+		setName(name);
+		setAttributeClass(type);
+		setVendorId(vendor);
+	}
+
 	/**
 	 * Retrieves the Radius type code for this attribute type.
 	 * @return Radius type code
 	 */
-	public int getCode() {
-		return code;
+	public int getTypeCode() {
+		return typeCode;
 	}
 	
 	/**
 	 * Sets the Radius type code for this attribute type.
 	 * @param code type code, 1-255
 	 */
-	public void setCode(int code) {
+	public void setTypeCode(int code) {
 		if (code < 1 || code > 255)
 			throw new IllegalArgumentException("code out of bounds");
-		this.code = code;
+		this.typeCode = code;
 	}
 	
 	/**
@@ -72,8 +86,8 @@ public class AttributeType {
 	 * attributes of this type.
 	 * @return class
 	 */
-	public Class getType() {
-		return type;
+	public Class getAttributeClass() {
+		return attributeClass;
 	}
 	
 	/**
@@ -81,12 +95,28 @@ public class AttributeType {
 	 * attributes of this type.
 	 * @return class
 	 */
-	public void setType(Class type) {
+	public void setAttributeClass(Class type) {
 		if (type == null)
 			throw new NullPointerException("type is null");
 		if (type.isInstance(RadiusAttribute.class))
 			throw new IllegalArgumentException("type is not a RadiusAttribute descendant");
-		this.type = type;
+		this.attributeClass = type;
+	}
+		
+	/**
+	 * Returns the vendor ID.
+	 * @return vendor ID
+	 */
+	public int getVendorId() {
+		return vendorId;
+	}
+	
+	/**
+	 * Sets the vendor ID.
+	 * @param vendorId vendor ID
+	 */
+	public void setVendorId(int vendorId) {
+		this.vendorId = vendorId;
 	}
 	
 	/**
@@ -134,9 +164,10 @@ public class AttributeType {
 		enumeration.put(new Integer(num), name);
 	}
 	
-	private int code;
+	private int vendorId = -1;
+	private int typeCode;
 	private String name;
-	private Class type;
+	private Class attributeClass;
 	private Map enumeration = null;
 	
 }

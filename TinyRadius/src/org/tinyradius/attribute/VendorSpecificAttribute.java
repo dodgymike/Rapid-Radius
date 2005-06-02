@@ -1,8 +1,8 @@
 /**
- * $Id: VendorSpecificAttribute.java,v 1.1 2005/04/17 14:51:33 wuttke Exp $
+ * $Id: VendorSpecificAttribute.java,v 1.2 2005/06/02 14:22:06 wuttke Exp $
  * Created on 10.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 package org.tinyradius.attribute;
 
@@ -63,6 +63,9 @@ public class VendorSpecificAttribute extends RadiusAttribute {
 	 * @param attribute sub-attribute to add
 	 */
 	public void addSubAttribute(RadiusAttribute attribute) {
+		if (attribute.getVendorId() != getVendorId())
+			throw new IllegalArgumentException("sub attribut has incorrect vendor ID");
+		
 		subAttributes.add(attribute);
 	}
 	
@@ -82,14 +85,12 @@ public class VendorSpecificAttribute extends RadiusAttribute {
 		AttributeType type = AttributeTypes.getAttributeType(name);
 		if (type == null)
 			throw new IllegalArgumentException("unknown attribute type '" + name + "'");
-		if (!(type instanceof VendorAttributeType))
-			throw new IllegalArgumentException("attribute type '" + name + "' is not a Vendor-Specific sub-attribute");
-		
-		VendorAttributeType vat = (VendorAttributeType)type;
-		if (vat.getVendorId() != getVendorId())
+		if (type.getVendorId() == -1)
+			throw new IllegalArgumentException("attribute type '" + name + "' is not a Vendor-Specific sub-attribute");		
+		if (type.getVendorId() != getVendorId())
 			throw new IllegalArgumentException("attribute type '" + name + "' does not belong to vendor ID " + getVendorId());
 
-		RadiusAttribute attribute = createSubAttribute(getVendorId(), vat.getCode());
+		RadiusAttribute attribute = createSubAttribute(getVendorId(), type.getTypeCode());
 		attribute.setAttributeValue(value);
 		addSubAttribute(attribute);		
 	}
@@ -162,7 +163,7 @@ public class VendorSpecificAttribute extends RadiusAttribute {
 		if (t == null)
 			throw new IllegalArgumentException("unknown attribute type name '" + type + "'");
 		
-		RadiusAttribute attr = getSubAttribute(t.getCode());
+		RadiusAttribute attr = getSubAttribute(t.getTypeCode());
 		if (attr == null)
 			return null;
 		else
@@ -186,7 +187,7 @@ public class VendorSpecificAttribute extends RadiusAttribute {
 		if (t == null)
 			throw new IllegalArgumentException("unknown attribute type name '" + type + "'");
 		
-		RadiusAttribute attr = getSubAttribute(t.getCode());
+		RadiusAttribute attr = getSubAttribute(t.getTypeCode());
 		if (attr == null)
 			return null;
 		else
@@ -232,8 +233,7 @@ public class VendorSpecificAttribute extends RadiusAttribute {
 	
 	/**
 	 * Reads a Vendor-Specific attribute and decodes the internal sub-attribute
-	 * structure. If it seems there is no such structure only the raw data is
-	 * stored.
+	 * structure.
 	 * @see org.tinyradius.attribute.RadiusAttribute#readAttribute(byte[], int, int)
 	 */
 	public void readAttribute(byte[] data, int offset, int length) 
@@ -271,10 +271,8 @@ public class VendorSpecificAttribute extends RadiusAttribute {
 		while (pos < vsaLen) {
 			int subtype = data[(offset + 6) + pos] & 0x0ff;
 			int sublength = data[(offset + 6) + pos + 1] & 0x0ff;
-			VendorAttributeType vat = AttributeTypes.getVendorSpecificAttributeType(vendorId, subtype);
 			RadiusAttribute a = createSubAttribute(vendorId, subtype);
 			a.readAttribute(data, (offset + 6) + pos, sublength);
-			a.setAttributeTypeObject(vat);
 			subAttributes.add(a);
 			pos += sublength;
 		}
@@ -290,35 +288,10 @@ public class VendorSpecificAttribute extends RadiusAttribute {
 		sb.append(vendorId);
 		for (Iterator i = getSubAttributes().iterator(); i.hasNext();) {
 			RadiusAttribute attr = (RadiusAttribute)i.next();
-			VendorAttributeType vat = AttributeTypes.getVendorSpecificAttributeType(getVendorId(), attr.getAttributeType());
-			String value = attr.getAttributeValue();
-			sb.append("\n  ");
-			sb.append(vat.getName());
-			sb.append(": ");
-			sb.append(value);
+			sb.append("\n");
+			sb.append(attr.toString());
 		}
 		return sb.toString();
-	}
-	
-	/**
-	 * Creates a new RadiusAttribute object meant to be used as a sub-attribute.
-	 * @param vendorId vendor ID
-	 * @param typeCode type code
-	 * @return RadiusAttribute object
-	 */
-	public static RadiusAttribute createSubAttribute(int vendorId, int typeCode) {
-		RadiusAttribute attribute = new RadiusAttribute();
-		VendorAttributeType vat = AttributeTypes.getVendorSpecificAttributeType(vendorId, typeCode);
-		if (vat != null && vat.getType() != null) {
-			try {
-				attribute = (RadiusAttribute)vat.getType().newInstance();
-			} catch (Exception e) {}
-		}
-		
-		attribute.setAttributeType(typeCode);
-		if (vat != null)
-			attribute.setAttributeTypeObject(vat);
-		return attribute;
 	}
 	
 	/**

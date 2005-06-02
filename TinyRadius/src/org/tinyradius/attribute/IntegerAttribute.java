@@ -1,8 +1,8 @@
 /**
- * $Id: IntegerAttribute.java,v 1.1 2005/04/17 14:51:33 wuttke Exp $
+ * $Id: IntegerAttribute.java,v 1.2 2005/06/02 14:22:06 wuttke Exp $
  * Created on 08.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 package org.tinyradius.attribute;
 
@@ -43,6 +43,7 @@ public class IntegerAttribute extends RadiusAttribute {
 	
 	/**
 	 * Returns the value of this attribute as a string.
+	 * Tries to resolve enumerations.
 	 * @see org.tinyradius.attribute.RadiusAttribute#getAttributeValue()
 	 */
 	public String getAttributeValue() {

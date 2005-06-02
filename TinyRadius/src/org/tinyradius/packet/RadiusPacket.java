@@ -1,9 +1,9 @@
 /**
- * $Id: RadiusPacket.java,v 1.1 2005/04/17 14:51:34 wuttke Exp $
+ * $Id: RadiusPacket.java,v 1.2 2005/06/02 14:22:08 wuttke Exp $
  * Created on 07.04.2005
  * Released under the LGPL
  * @author Matthias Wuttke
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 package org.tinyradius.packet;
 
@@ -204,7 +204,7 @@ public class RadiusPacket {
 		if (type == null)
 			throw new IllegalArgumentException("unknown attribute type '" + typeName + "'");
 		
-		RadiusAttribute attribute = RadiusAttribute.createRadiusAttribute(type.getCode());
+		RadiusAttribute attribute = RadiusAttribute.createRadiusAttribute(type.getTypeCode());
 		attribute.setAttributeValue(value);
 		addAttribute(attribute);
 	}
@@ -295,7 +295,7 @@ public class RadiusPacket {
 		if (t == null)
 			throw new IllegalArgumentException("unknown attribute type name '" + type + "'");
 		
-		RadiusAttribute attr = getAttribute(t.getCode());
+		RadiusAttribute attr = getAttribute(t.getTypeCode());
 		if (attr == null)
 			return null;
 		else
@@ -319,7 +319,7 @@ public class RadiusPacket {
 		if (t == null)
 			throw new IllegalArgumentException("unknown attribute type name '" + type + "'");
 		
-		RadiusAttribute attr = getAttribute(t.getCode());
+		RadiusAttribute attr = getAttribute(t.getTypeCode());
 		if (attr == null)
 			return null;
 		else
