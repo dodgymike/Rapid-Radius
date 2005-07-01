@@ -1,9 +1,9 @@
 /**
- * $Id: RadiusPacket.java,v 1.2 2005/06/02 14:22:08 wuttke Exp $
+ * $Id: RadiusPacket.java,v 1.3 2005/07/01 10:50:20 wuttke Exp $
  * Created on 07.04.2005
  * Released under the LGPL
  * @author Matthias Wuttke
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 package org.tinyradius.packet;
 
@@ -616,7 +616,7 @@ public class RadiusPacket {
 		int length = in.read() << 8 | in.read();
 	
 		if (request != null && request.getPacketIdentifier() != identifier)
-			throw new RadiusException("bad packet: invalid packet identifier");
+			throw new RadiusException("bad packet: invalid packet identifier (request: " + request.getPacketIdentifier() + ", response: " + identifier);
 		if (length < RADIUS_HEADER_LENGTH)
 			throw new RadiusException("bad packet: packet too short (" + length + " bytes)");
 		if (length > MAX_PACKET_LENGTH)
