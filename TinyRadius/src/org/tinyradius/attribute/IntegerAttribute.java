@@ -1,8 +1,8 @@
 /**
- * $Id: IntegerAttribute.java,v 1.2 2005/06/02 14:22:06 wuttke Exp $
+ * $Id: IntegerAttribute.java,v 1.3 2005/08/06 12:18:46 wuttke Exp $
  * Created on 08.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 package org.tinyradius.attribute;
 
@@ -37,7 +37,7 @@ public class IntegerAttribute extends RadiusAttribute {
 	 */
 	public int getAttributeValueInt() {
 		byte[] data = getAttributeData();
-		return (int)(((data[0] & 0x0ff) << 24) | ((data[1] & 0x0ff) << 16) | 
+		return (((data[0] & 0x0ff) << 24) | ((data[1] & 0x0ff) << 16) | 
 				((data[2] & 0x0ff) << 8) | (data[3] & 0x0ff));
 	}
 	
