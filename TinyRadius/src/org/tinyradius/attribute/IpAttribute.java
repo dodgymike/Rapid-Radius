@@ -1,8 +1,8 @@
 /**
- * $Id: IpAttribute.java,v 1.1 2005/04/17 14:51:33 wuttke Exp $
+ * $Id: IpAttribute.java,v 1.2 2005/09/04 22:11:03 wuttke Exp $
  * Created on 10.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 package org.tinyradius.attribute;
 
@@ -91,6 +91,20 @@ public class IpAttribute extends RadiusAttribute {
 			throw new RuntimeException("expected 4 bytes attribute data");
 		return ((long)(data[0] & 0x0ff)) << 24 | (data[1] & 0x0ff) << 16 |
 			   (data[2] & 0x0ff) << 8 | (data[3] & 0x0ff);
+	}
+	
+	/**
+	 * Sets the IP number represented by this IpAttribute
+	 * as a 32 bit unsigned number.
+	 * @param ip
+	 */
+	public void setIpAsLong(long ip) {
+		byte[] data = new byte[4];
+		data[0] = (byte)((ip >> 24) & 0x0ff);
+		data[1] = (byte)((ip >> 16) & 0x0ff);
+		data[2] = (byte)((ip >> 8) & 0x0ff);
+		data[3] = (byte)(ip & 0x0ff);
+		setAttributeData(data);
 	}
 
 	/**

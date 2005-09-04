@@ -1,12 +1,2 @@
-- include vendor ID numbers as string constants in dictionary file
-
-- "Include" directive for dictionary file
-
-- improve dictionary parsing
-
-- transparent Vendor-Specific attribute handling
-  (as implemented by FreeRadius)
-  
 - enhance build.xml:
-  - auto-upload to website and upload.sf.net
-  - pack distribution to a folder and tar the folder
+  - target for uploading to upload.sf.net

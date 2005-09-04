@@ -1,15 +1,14 @@
 /**
- * $Id: TestServer.java,v 1.2 2005/05/03 15:17:43 wuttke Exp $
+ * $Id: TestServer.java,v 1.3 2005/09/04 22:11:02 wuttke Exp $
  * Created on 08.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 package org.tinyradius.test;
 
 import java.io.IOException;
 import java.net.InetAddress;
 
-import org.tinyradius.attribute.StringAttribute;
 import org.tinyradius.packet.AccessRequest;
 import org.tinyradius.packet.RadiusPacket;
 import org.tinyradius.util.RadiusException;
@@ -47,8 +46,7 @@ public class TestServer {
 				System.out.println("Received Access-Request:\n" + accessRequest);
 				RadiusPacket packet = super.accessRequestReceived(accessRequest, client);
 				if (packet.getPacketType() == RadiusPacket.ACCESS_ACCEPT)
-					packet.addAttribute(new StringAttribute(18, "Welcome " + accessRequest.getUserName() + "!"));
-			
+					packet.addAttribute("Reply-Message", "Welcome " + accessRequest.getUserName() + "!");
 				if (packet == null)
 					System.out.println("Ignore packet.");
 				else

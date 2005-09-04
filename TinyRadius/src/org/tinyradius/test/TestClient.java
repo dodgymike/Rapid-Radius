@@ -1,12 +1,11 @@
 /**
- * $Id: TestClient.java,v 1.1 2005/04/17 14:51:32 wuttke Exp $
+ * $Id: TestClient.java,v 1.2 2005/09/04 22:11:02 wuttke Exp $
  * Created on 08.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 package org.tinyradius.test;
 
-import org.tinyradius.attribute.VendorSpecificAttribute;
 import org.tinyradius.packet.AccessRequest;
 import org.tinyradius.packet.AccountingRequest;
 import org.tinyradius.packet.RadiusPacket;
@@ -43,12 +42,8 @@ public class TestClient {
 		ar.addAttribute("NAS-Identifier", "this.is.my.nas-identifier.de");
 		ar.addAttribute("NAS-IP-Address", "192.168.0.100");
 		ar.addAttribute("Service-Type", "Login-User");
-		
-		// add a vendor-specific attribute
-		VendorSpecificAttribute vsa = new VendorSpecificAttribute(14122 /* WIFI */);
-		vsa.addSubAttribute("Redirection-URL", "http://www.sourceforge.net/");
-		vsa.addSubAttribute("Location-ID", "net.sourceforge.ap1");
-		ar.addAttribute(vsa);
+		ar.addAttribute("Redirection-URL", "http://www.sourceforge.net/");
+		ar.addAttribute("Location-ID", "net.sourceforge.ap1");
 		
 		System.out.println("Packet before it is sent\n" + ar + "\n");
 		RadiusPacket response = rc.authenticate(ar);

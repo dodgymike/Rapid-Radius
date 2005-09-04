@@ -9,7 +9,8 @@
 <h1><img src="tinyradius-small.png" align="left"/>TinyRadius: Java Radius library</h1>
 
 <p>TinyRadius is a simple, small and fast Java Radius library capable of
-sending and receiving Radius packets of all types released under the LGPL.</p>
+sending and receiving Radius packets of all types. It is released under the 
+terms of the LGPL.</p>
 
 <p><A href="https://sourceforge.net/projects/tinyradius/">SourceForge Project Overview</A> | 
 <A href="apidoc/index.html">JavaDoc API documentation</A> |
@@ -27,20 +28,30 @@ names read from a dictionary file</li>
 <li>send and receive Radius packets with "Vendor-Specific" attributes</li>
 </ul>
 
-<h3>What you cannot do with it:</h3>
+<h3>What you cannot/should not do with it:</h3>
 
 <ul>
 <li>set up a complex Radius server (please use <a href="http://www.freeradius.org">FreeRadius</a>
 or <a href="http://jradius.sourceforge.net/">JRadius</a>)</li>
 <li>connect the server to a user database without writing Java code
 (this library is ment to be plugged in applications and not to be
-used stand-alone)</li>
+used as a stand-alone server)</li>
 </ul>
 
 <p>TinyRadius comes with small sample applications which show how to integrate
 it as a Radius server and a Radius client.</p>
 
-<h3>EXAMPLE 1: Sending an Access-Request</h3>
+<h3>EXAMPLE 1: Authentication made easy</h3>
+
+<p>If you do not need to set special attribute values, you can just use the
+method authenticate() from the RadiusClient:</p>
+
+<pre>RadiusClient rc = new RadiusClient(host, sharedSecret);
+if (rc.authenticate(userName, password)) {
+	...</pre>
+
+
+<h3>EXAMPLE 2: Sending an Access-Request with multiple attributes</h3>
 
 <p>1. Create a RadiusClient object with the host name and shared secret
 of the Radius server you wish to contact. You may set additional details
@@ -60,11 +71,16 @@ ar.setAuthProtocol(AccessRequest.AUTH_CHAP); // or AUTH_PAP</pre>
 
 <p>3. Set further attributes. Note that TinyRadius resolves the attribute type
 from the given type name and that it converts the IP address and the name
-of the constant (Login-User) to the right values.</p>
+of the constant (Login-User) to the right values. Please also note how
+the Vendor-Specific (WISPr) sub-attribute &quot;WISPr-Location-ID&quot;
+is set. This call results in the creation of a Vendor-Specific attribute
+with the proper vendor ID and the addition of a sub-attribute to this
+attribute.</p>
 
 <pre>ar.addAttribute("NAS-Identifier", "this.is.my.nas-identifier.de");
 ar.addAttribute("NAS-IP-Address", "192.168.0.100");
-ar.addAttribute("Service-Type", "Login-User");</pre>
+ar.addAttribute("Service-Type", "Login-User");
+ar.addAttribute("WISPr-Location-ID", "ger,de.sample-location");</pre>
 
 <p>4. Send the packet and receive the response.</p>
 
@@ -72,15 +88,6 @@ ar.addAttribute("Service-Type", "Login-User");</pre>
 if (response.getPacketType() == RadiusPacket.ACCESS_ACCEPT) {
 	...</pre>
 
-
-<h3>EXAMPLE 2: Authentication made easy</h3>
-
-<p>If you do not need to control attribute values, you can just use the
-method authenticate() from the RadiusClient:</p>
-
-<pre>RadiusClient rc = new RadiusClient(host, secret);
-if (rc.authenticate(userName, password)) {
-	...</pre>
 
 <h3>EXAMPLE 3: How to implement a Radius server</h3>
 

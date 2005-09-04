@@ -1,8 +1,8 @@
 /**
- * $Id: RadiusServer.java,v 1.3 2005/05/03 15:17:41 wuttke Exp $
+ * $Id: RadiusServer.java,v 1.4 2005/09/04 22:11:02 wuttke Exp $
  * Created on 09.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 package org.tinyradius.util;
 
@@ -193,7 +193,7 @@ public abstract class RadiusServer {
 	 * A packet is discarded as a duplicate if in the duplicate interval
 	 * there was another packet with the same identifier originating from the
 	 * same address.
-	 * @return duplicate interval
+	 * @return duplicate interval (ms)
 	 */
 	public long getDuplicateInterval() {
 		return duplicateInterval;
@@ -204,7 +204,7 @@ public abstract class RadiusServer {
 	 * A packet is discarded as a duplicate if in the duplicate interval
 	 * there was another packet with the same identifier originating from the
 	 * same address.
-	 * @param duplicateInterval duplicate interval, >0
+	 * @param duplicateInterval duplicate interval (ms), >0
 	 */
 	public void setDuplicateInterval(long duplicateInterval) {
 		if (duplicateInterval <= 0)

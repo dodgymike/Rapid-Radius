@@ -1,18 +1,20 @@
 /**
- * $Id: AttributeType.java,v 1.2 2005/06/02 14:22:06 wuttke Exp $
+ * $Id: AttributeType.java,v 1.1 2005/09/04 22:11:00 wuttke Exp $
  * Copyright by teuto.net Netzdienste GmbH 2005. All rights reserved.
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation. Commercial licenses also available.
  * See the accompanying file LICENSE for details.
  * @author Matthias Wuttke
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.1 $
  */
-package org.tinyradius.attribute;
+package org.tinyradius.dictionary;
 
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
+import org.tinyradius.attribute.RadiusAttribute;
 
 /**
  * Represents a Radius attribute type.
@@ -21,9 +23,10 @@ public class AttributeType {
 
 	/**
 	 * Create a new attribute type.
-	 * @param code
-	 * @param name
-	 * @param type
+	 * @param code Radius attribute type code
+	 * @param name Attribute type name
+	 * @param type RadiusAttribute descendant who handles
+	 * attributes of this type
 	 */
 	public AttributeType(int code, String name, Class type) {
 		setTypeCode(code);
@@ -34,7 +37,7 @@ public class AttributeType {
 	/**
 	 * Constructs a Vendor-Specific sub-attribute type.
 	 * @param vendor vendor ID
-	 * @param code sub-attribute type
+	 * @param code sub-attribute type code
 	 * @param name sub-attribute name
 	 * @param type sub-attribute class
 	 */
@@ -93,18 +96,18 @@ public class AttributeType {
 	/**
 	 * Sets the RadiusAttribute descendant class which represents
 	 * attributes of this type.
-	 * @return class
 	 */
 	public void setAttributeClass(Class type) {
 		if (type == null)
 			throw new NullPointerException("type is null");
-		if (type.isInstance(RadiusAttribute.class))
+		if (!RadiusAttribute.class.isAssignableFrom(type))
 			throw new IllegalArgumentException("type is not a RadiusAttribute descendant");
 		this.attributeClass = type;
 	}
 		
 	/**
 	 * Returns the vendor ID.
+	 * No vendor specific attribute = -1 
 	 * @return vendor ID
 	 */
 	public int getVendorId() {

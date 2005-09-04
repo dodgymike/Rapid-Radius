@@ -1,12 +1,15 @@
 /**
- * $Id: RadiusAttribute.java,v 1.2 2005/06/02 14:22:06 wuttke Exp $
+ * $Id: RadiusAttribute.java,v 1.3 2005/09/04 22:11:03 wuttke Exp $
  * Created on 07.04.2005
  * Released under the terms of the LGPL
  * @author Matthias Wuttke
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 package org.tinyradius.attribute;
 
+import org.tinyradius.dictionary.AttributeType;
+import org.tinyradius.dictionary.DefaultDictionary;
+import org.tinyradius.dictionary.Dictionary;
 import org.tinyradius.util.RadiusException;
 import org.tinyradius.util.RadiusUtil;
 
@@ -105,6 +108,24 @@ public class RadiusAttribute {
 	public void setVendorId(int vendorId) {
 		this.vendorId = vendorId;
 	}
+
+	/**
+	 * Returns the dictionary this Radius attribute uses.
+	 * @return Dictionary instance
+	 */
+	public Dictionary getDictionary() {
+		return dictionary;
+	}
+	
+	/**
+	 * Sets a custom dictionary to use. If no dictionary is set,
+	 * the default dictionary is used.
+	 * @param dictionary Dictionary class to use
+	 * @see DefaultDictionary
+	 */
+	public void setDictionary(Dictionary dictionary) {
+		this.dictionary = dictionary;
+	}
 	
 	/**
 	 * Returns this attribute encoded as a byte array.
@@ -168,50 +189,63 @@ public class RadiusAttribute {
 	 */
 	public AttributeType getAttributeTypeObject() {
 		if (getVendorId() != -1)
-			return AttributeTypes.getVendorSpecificAttributeType(getVendorId(), getAttributeType());
+			return dictionary.getAttributeTypeByCode(getVendorId(), getAttributeType());
 		else
-			return AttributeTypes.getAttributeType(getAttributeType());
+			return dictionary.getAttributeTypeByCode(getAttributeType());
 	}
 	
 	/**
 	 * Creates a RadiusAttribute object of the appropriate type.
-	 * @param type attribute type
+	 * @param dictionary Dictionary to use
+	 * @param vendorId vendor ID or -1
+	 * @param attributeType attribute type
 	 * @return RadiusAttribute object
 	 */
-	public static RadiusAttribute createRadiusAttribute(int type) {
+	public static RadiusAttribute createRadiusAttribute(Dictionary dictionary, int vendorId, int attributeType) {
 		RadiusAttribute attribute = new RadiusAttribute();
 		
-		try {
-			AttributeType at = AttributeTypes.getAttributeType(type);
-			if (at != null && at.getAttributeClass() != null)
+		AttributeType at = dictionary.getAttributeTypeByCode(vendorId, attributeType);
+		if (at != null && at.getAttributeClass() != null) {
+			try {
 				attribute = (RadiusAttribute)at.getAttributeClass().newInstance();
-		} catch (Exception e) {
+			} catch (Exception e) {
+				// error instantiating class - should not occur
+			}
 		}
 		
-		attribute.setAttributeType(type);
-		return attribute;
-	}
-	
-	/**
-	 * Creates a new RadiusAttribute object meant to be used as a sub-attribute.
-	 * @param vendorId vendor ID
-	 * @param typeCode type code
-	 * @return RadiusAttribute object
-	 */
-	public static RadiusAttribute createSubAttribute(int vendorId, int typeCode) {
-		RadiusAttribute attribute = new RadiusAttribute();
-
-		try {
-			AttributeType at = AttributeTypes.getVendorSpecificAttributeType(vendorId, typeCode);
-			if (at != null && at.getAttributeClass() != null)
-				attribute = (RadiusAttribute)at.getAttributeClass().newInstance();
-		} catch (Exception e) {
-		}
-		
-		attribute.setAttributeType(typeCode);
+		attribute.setAttributeType(attributeType);
+		attribute.setDictionary(dictionary);
 		attribute.setVendorId(vendorId);
 		return attribute;
 	}
+
+	/**
+	 * Creates a Radius attribute, including vendor-specific
+	 * attributes. The default dictionary is used.
+	 * @param vendorId vendor ID or -1
+	 * @param attributeType attribute type
+	 * @return RadiusAttribute instance
+	 */
+	public static RadiusAttribute createRadiusAttribute(int vendorId, int attributeType) {
+		Dictionary dictionary = DefaultDictionary.getDefaultDictionary();
+		return createRadiusAttribute(dictionary, vendorId, attributeType);
+	}
+		
+	/**
+	 * Creates a Radius attribute. The default dictionary is
+	 * used.
+	 * @param attributeType attribute type
+	 * @return RadiusAttribute instance
+	 */
+	public static RadiusAttribute createRadiusAttribute(int attributeType) {
+		Dictionary dictionary = DefaultDictionary.getDefaultDictionary();
+		return createRadiusAttribute(dictionary, -1, attributeType);
+	}
+
+	/**
+	 * Dictionary to look up attribute names.
+	 */
+	private Dictionary dictionary = DefaultDictionary.getDefaultDictionary();
 	
 	/**
 	 * Attribute type

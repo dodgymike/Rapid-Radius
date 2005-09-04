@@ -1,8 +1,8 @@
 /**
- * $Id: RadiusClient.java,v 1.3 2005/07/01 10:47:44 wuttke Exp $
+ * $Id: RadiusClient.java,v 1.4 2005/09/04 22:11:02 wuttke Exp $
  * Created on 09.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 package org.tinyradius.util;
 
@@ -263,7 +263,7 @@ public class RadiusClient {
 				if (logger.isInfoEnabled())
 					logger.info("communication failure, retry " + i);
 				// TODO increase Acct-Delay-Time by getSocketTimeout()/1000
-				// this changes the packet identifier and requires packetOut to be
+				// this changes the packet authenticator and requires packetOut to be
 				// calculated again (call makeDatagramPacket)
             }
         }
