@@ -1,8 +1,8 @@
 /**
- * $Id: IpAttribute.java,v 1.2 2005/09/04 22:11:03 wuttke Exp $
+ * $Id: IpAttribute.java,v 1.3 2005/09/06 16:38:41 wuttke Exp $
  * Created on 10.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 package org.tinyradius.attribute;
 
@@ -30,6 +30,16 @@ public class IpAttribute extends RadiusAttribute {
 	public IpAttribute(int type, String value) {
 		setAttributeType(type);
 		setAttributeValue(value);
+	}
+	
+	/**
+	 * Constructs an IP attribute.
+	 * @param type attribute type code
+	 * @param ipNum value as a 32 bit unsigned int
+	 */
+	public IpAttribute(int type, long ipNum) {
+		setAttributeType(type);
+		setIpAsLong(ipNum);
 	}
 	
 	/**

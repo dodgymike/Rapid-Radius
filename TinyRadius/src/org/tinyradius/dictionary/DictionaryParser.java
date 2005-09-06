@@ -1,8 +1,8 @@
 /**
- * $Id: DictionaryParser.java,v 1.1 2005/09/04 22:11:00 wuttke Exp $
+ * $Id: DictionaryParser.java,v 1.2 2005/09/06 16:38:40 wuttke Exp $
  * Created on 28.08.2005
  * @author mw
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 package org.tinyradius.dictionary;
 
@@ -26,6 +26,20 @@ import org.tinyradius.attribute.VendorSpecificAttribute;
  */
 public class DictionaryParser {
 
+	/**
+	 * Returns a new dictionary filled with the contents
+	 * from the given input stream.
+	 * @param source input stream
+	 * @return dictionary object
+	 * @throws IOException
+	 */
+	public static Dictionary parseDictionary(InputStream source) 
+	throws IOException {
+		WritableDictionary d = new MemoryDictionary();
+		parseDictionary(source, d);
+		return d;
+	}
+	
 	/**
 	 * Parses the dictionary from the specified InputStream.
 	 * @param source input stream

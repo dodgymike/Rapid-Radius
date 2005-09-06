@@ -1,9 +1,9 @@
 /**
- * $Id: RadiusPacket.java,v 1.4 2005/09/04 22:11:02 wuttke Exp $
+ * $Id: RadiusPacket.java,v 1.5 2005/09/06 16:38:41 wuttke Exp $
  * Created on 07.04.2005
  * Released under the LGPL
  * @author Matthias Wuttke
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 package org.tinyradius.packet;
 
@@ -187,6 +187,7 @@ public class RadiusPacket {
 	public void addAttribute(RadiusAttribute attribute) {
 		if (attribute == null)
 			throw new NullPointerException("attribute is null");
+		attribute.setDictionary(getDictionary());
 		if (attribute.getVendorId() == -1)
 			this.attributes.add(attribute);
 		else {

@@ -9,6 +9,8 @@ Plans for 0.9.5: Proxy support
   by their name or by vendor ID/type code
   through methods in RadiusPacket
 - INCLUDE directive for dictionary files
+- ability to set listen address for RadiusServer
+- improved IP attribute (IP represented as string or long)
 
 0.9.3:
 - fixed a bug concerning sub attributes of sub-type 26
