@@ -1,2 +1,4 @@
-- enhance build.xml:
-  - target for uploading to upload.sf.net
+- include proxying support from glanz - thanks!
+- implement asynchronous radius client for sending multiple requests
+  in parallel while still waiting for responses to earlier packets
+- enhance build.xml: target for uploading to upload.sf.net

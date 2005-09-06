@@ -1,8 +1,8 @@
 /**
- * $Id: VendorSpecificAttribute.java,v 1.3 2005/09/04 22:11:03 wuttke Exp $
+ * $Id: VendorSpecificAttribute.java,v 1.4 2005/09/06 18:06:33 wuttke Exp $
  * Created on 10.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 package org.tinyradius.attribute;
 
@@ -54,7 +54,7 @@ public class VendorSpecificAttribute extends RadiusAttribute {
 	
 	/**
 	 * Returns the vendor ID of the sub-attributes.
-	 * @return
+	 * @return vendor ID of sub attributes
 	 */
 	public int getChildVendorId() {
 		return childVendorId;

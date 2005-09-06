@@ -1,12 +1,12 @@
 /**
- * $Id: AttributeType.java,v 1.2 2005/09/06 16:38:40 wuttke Exp $
+ * $Id: AttributeType.java,v 1.3 2005/09/06 18:06:33 wuttke Exp $
  * Copyright by teuto.net Netzdienste GmbH 2005. All rights reserved.
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation. Commercial licenses also available.
  * See the accompanying file LICENSE for details.
  * @author Matthias Wuttke
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 package org.tinyradius.dictionary;
 
@@ -176,7 +176,7 @@ public class AttributeType {
 	public String toString() {
 		String s = getTypeCode() + 
 			"/" + getName() +
-			": " + attributeClass.getSimpleName();
+			": " + attributeClass.getName();
 		if (getVendorId() != -1)
 			s += " (vendor " + getVendorId() + ")";
 		return s;

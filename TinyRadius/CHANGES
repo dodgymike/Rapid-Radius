@@ -1,14 +1,15 @@
 TinyRadius Change Log
 
-Plans for 0.9.5: Proxy support
+Plans for 0.9.6: Asynchronous Radius client (see TODO)
+Plans for 0.9.5: Proxy support (thanks to glanz)
 
 0.9.4:
 - greatly improved dictionary support: new package
   org.tinyradius.dictionary, see package.html
+- INCLUDE directive for dictionary files
 - easy access to Vendor-Specific sub-attributes
   by their name or by vendor ID/type code
   through methods in RadiusPacket
-- INCLUDE directive for dictionary files
 - ability to set listen address for RadiusServer
 - improved IP attribute (IP represented as string or long)
 

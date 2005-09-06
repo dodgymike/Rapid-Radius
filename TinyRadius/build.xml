@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
-$Id: build.xml,v 1.7 2005/09/06 18:06:32 wuttke Exp $   
+$Id: build.xml,v 1.8 2005/09/06 18:08:00 wuttke Exp $   
 created 11.04.2005 18:05:36                                                        
 TinyRadius build file
 -->
@@ -23,7 +23,7 @@ TinyRadius build file
 
     <target name="jar" depends="compile">
 	    <mkdir dir="${dist}"/>
-    	<copy file="${src}/org/tinyradius/attribute/dictionary" todir="${build}/org/tinyradius/attribute"/>
+    	<copy file="${src}/org/tinyradius/dictionary/default_dictionary" todir="${build}/org/tinyradius/attribute"/>
         <jar jarfile="${dist}/TinyRadius-${version}.jar" basedir="${build}"/>
     </target>
 	
