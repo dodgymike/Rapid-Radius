@@ -1,8 +1,8 @@
 /**
- * $Id: RadiusClient.java,v 1.5 2005/09/07 17:38:33 wuttke Exp $
+ * $Id: RadiusClient.java,v 1.6 2005/09/07 22:19:01 wuttke Exp $
  * Created on 09.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 package org.tinyradius.util;
 
@@ -39,6 +39,14 @@ public class RadiusClient {
 	public RadiusClient(String hostName, String sharedSecret) {
 		setHostName(hostName);
 		setSharedSecret(sharedSecret);
+	}
+	
+	/**
+	 * Constructs a Radius client for the given Radius endpoint.
+	 * @param client Radius endpoint
+	 */
+	public RadiusClient(RadiusEndpoint client) {
+		this(client.getEndpointAddress().getAddress().getHostAddress(), client.getSharedSecret());		
 	}
 	
 	/**
@@ -254,6 +262,21 @@ public class RadiusClient {
         }
 		
 		return null;
+	}
+	
+	/**
+	 * Sends the specified packet to the specified Radius server endpoint.
+	 * @param remoteServer Radius endpoint consisting of server address,
+	 * port number and shared secret
+	 * @param request Radius packet to be sent 
+	 * @return received response packet
+	 * @throws RadiusException malformed packet
+	 * @throws IOException error while communication
+	 */
+	public static RadiusPacket communicate(RadiusEndpoint remoteServer, RadiusPacket request) 
+	throws RadiusException, IOException {
+		RadiusClient rc = new RadiusClient(remoteServer);
+		return rc.communicate(request, remoteServer.getEndpointAddress().getPort());
 	}
 
 	/**

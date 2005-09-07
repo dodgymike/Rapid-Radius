@@ -1,8 +1,8 @@
 /**
- * $Id: RadiusServer.java,v 1.5 2005/09/06 16:38:40 wuttke Exp $
+ * $Id: RadiusServer.java,v 1.6 2005/09/07 22:19:01 wuttke Exp $
  * Created on 09.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 package org.tinyradius.util;
 
@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.Iterator;
@@ -20,6 +21,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.tinyradius.attribute.RadiusAttribute;
 import org.tinyradius.packet.AccessRequest;
 import org.tinyradius.packet.AccountingRequest;
 import org.tinyradius.packet.RadiusPacket;
@@ -35,10 +37,10 @@ public abstract class RadiusServer {
 	/**
 	 * Returns the shared secret used to communicate with the client with the
 	 * passed IP address or null if the client is not allowed at this server.
-	 * @param client IP address of client
+	 * @param client IP address and port number of client
 	 * @return shared secret or null
 	 */
-	public abstract String getSharedSecret(InetAddress client);
+	public abstract String getSharedSecret(InetSocketAddress client);
 	
 	/**
 	 * Returns the password of the passed user. Either this
@@ -57,13 +59,16 @@ public abstract class RadiusServer {
 	 * @exception RadiusException malformed request packet; if this
 	 * exception is thrown, no answer will be sent
 	 */
-	public RadiusPacket accessRequestReceived(AccessRequest accessRequest, InetAddress client)
+	public RadiusPacket accessRequestReceived(AccessRequest accessRequest, InetSocketAddress client)
 	throws RadiusException {
 		String plaintext = getUserPassword(accessRequest.getUserName());
 		int type = RadiusPacket.ACCESS_REJECT;
 		if (plaintext != null && accessRequest.verifyPassword(plaintext))
 			type = RadiusPacket.ACCESS_ACCEPT;
-		return new RadiusPacket(type, accessRequest.getPacketIdentifier());
+		
+		RadiusPacket answer = new RadiusPacket(type, accessRequest.getPacketIdentifier());
+		copyProxyState(accessRequest, answer);
+		return answer; 
 	}
 	
 	/**
@@ -75,9 +80,11 @@ public abstract class RadiusServer {
 	 * @exception RadiusException malformed request packet; if this
 	 * exception is thrown, no answer will be sent
 	 */
-	public RadiusPacket accountingRequestReceived(AccountingRequest accountingRequest, InetAddress client) 
+	public RadiusPacket accountingRequestReceived(AccountingRequest accountingRequest, InetSocketAddress client) 
 	throws RadiusException {
-		return new RadiusPacket(RadiusPacket.ACCOUNTING_RESPONSE, accountingRequest.getPacketIdentifier());
+		RadiusPacket answer = new RadiusPacket(RadiusPacket.ACCOUNTING_RESPONSE, accountingRequest.getPacketIdentifier());
+		copyProxyState(accountingRequest, answer);
+		return answer;
 	}
 	
 	/**
@@ -233,6 +240,20 @@ public abstract class RadiusServer {
 	}
 	
 	/**
+	 * Copies all Proxy-State attributes from the request
+	 * packet to the response packet.
+	 * @param request request packet
+	 * @param answer response packet
+	 */
+	protected void copyProxyState(RadiusPacket request, RadiusPacket answer) {
+		List proxyStateAttrs = request.getAttributes(33);
+		for (Iterator i = proxyStateAttrs.iterator(); i.hasNext();) {
+			RadiusAttribute proxyStateAttr = (RadiusAttribute)i.next();
+			answer.addAttribute(proxyStateAttr);
+		}		
+	}
+	
+	/**
 	 * Listens on the auth port (blocks the current thread).
 	 * Returns when stop() is called.
 	 * @throws SocketException
@@ -272,47 +293,31 @@ public abstract class RadiusServer {
 				}
 				
 				// check client
-				InetAddress address = packetIn.getAddress();				
-				String secret = getSharedSecret(address);
+				InetSocketAddress localAddress = (InetSocketAddress)s.getLocalSocketAddress();
+				InetSocketAddress remoteAddress = new InetSocketAddress(packetIn.getAddress(), packetIn.getPort());				
+				String secret = getSharedSecret(remoteAddress);
 				if (secret == null) {
 					if (logger.isInfoEnabled())
-						logger.info("ignoring packet from unknown client " + address);
+						logger.info("ignoring packet from unknown client " + remoteAddress + " received on local address " + localAddress);
 					continue;
 				}
 				
 				// parse packet
 				RadiusPacket request = makeRadiusPacket(packetIn, secret);
 				if (logger.isInfoEnabled())
-					logger.info("received packet from " + address + ": " + request);
-				
-				// construct response
-				RadiusPacket response = null;
-				
-				// check for duplicates
-				if (!isPacketDuplicate(request, address)) {
-					// handle request packet
-					if (s == authSocket) {
-						if (request instanceof AccessRequest)
-							response = accessRequestReceived((AccessRequest)request, address);
-						else
-							logger.error("unknown Radius packet type: " + request.getPacketType());
-					} else if (s == acctSocket) {
-						if (request instanceof AccountingRequest)
-							response = accountingRequestReceived((AccountingRequest)request, address);
-						else
-							logger.error("unknown Radius packet type: " + request.getPacketType());
-					}
-				} else
-					logger.info("ignore duplicate packet");
+					logger.info("received packet from " + remoteAddress + " on local address " + localAddress + ": " + request);
+
+				// handle packet
+				RadiusPacket response = handlePacket(localAddress, remoteAddress, request, secret);
 				
 				// send response
 				if (response != null) {
 					if (logger.isInfoEnabled())
 						logger.info("send response: " + response);
-					DatagramPacket packetOut = makeDatagramPacket(response, secret, address, packetIn.getPort(), request);
+					DatagramPacket packetOut = makeDatagramPacket(response, secret, remoteAddress.getAddress(), packetIn.getPort(), request);
 					s.send(packetOut);
 				} else
-					logger.info("no response sent");
+					logger.info("no response sent");						
 			} catch (SocketTimeoutException ste) {
 				// this is expected behaviour
 			} catch (IOException ioe) {
@@ -323,6 +328,41 @@ public abstract class RadiusServer {
 				logger.error("malformed Radius packet", re);
 			}
 		}
+	}
+
+	/**
+	 * Handles the received Radius packet and constructs a response. 
+	 * @param localAddress local address the packet was received on
+	 * @param remoteAddress remote address the packet was sent by
+	 * @param request the packet
+	 * @return response packet or null for no response
+	 * @throws RadiusException
+	 */
+	protected RadiusPacket handlePacket(InetSocketAddress localAddress, InetSocketAddress remoteAddress, RadiusPacket request, String sharedSecret) 
+	throws RadiusException, IOException {
+		RadiusPacket response = null;
+		
+		// check for duplicates
+		if (!isPacketDuplicate(request, remoteAddress)) {
+			if (localAddress.getPort() == getAuthPort()) {
+				// handle packets on auth port
+				if (request instanceof AccessRequest)
+					response = accessRequestReceived((AccessRequest)request, remoteAddress);
+				else
+					logger.error("unknown Radius packet type: " + request.getPacketType());
+			} else if (localAddress.getPort() == getAcctPort()) {
+				// handle packets on acct port
+				if (request instanceof AccountingRequest)
+					response = accountingRequestReceived((AccountingRequest)request, remoteAddress);
+				else
+					logger.error("unknown Radius packet type: " + request.getPacketType());
+			} else {
+				// ignore packet on unknown port
+			}
+		} else
+			logger.info("ignore duplicate packet");
+
+		return response;
 	}
 
 	/**
@@ -338,7 +378,6 @@ public abstract class RadiusServer {
 			else
 				authSocket = new DatagramSocket(getAuthPort(), getListenAddress());
 			authSocket.setSoTimeout(getSocketTimeout());
-			
 		}
 		return authSocket;
 	}
@@ -365,7 +404,7 @@ public abstract class RadiusServer {
 	 * @param packet RadiusPacket
 	 * @param secret shared secret to encode packet
 	 * @param address where to send the packet
-	 * @param port destination port number
+	 * @param port destination port
 	 * @param request request packet
 	 * @return new datagram packet
 	 * @throws IOException
@@ -401,9 +440,10 @@ public abstract class RadiusServer {
 	 * A packet is duplicate if another packet with the same identifier
 	 * has been sent from the same host in the last time. 
 	 * @param packet packet in question
+	 * @param address client address
 	 * @return true if it is duplicate
 	 */
-	protected boolean isPacketDuplicate(RadiusPacket packet, InetAddress address) {
+	protected boolean isPacketDuplicate(RadiusPacket packet, InetSocketAddress address) {
 		long now = System.currentTimeMillis();
 		long intervalStart = now - getDuplicateInterval();
 		
@@ -460,6 +500,6 @@ class ReceivedPacket {
 	/**
 	 * The address of the host who sent the packet.
 	 */
-	public InetAddress address;
+	public InetSocketAddress address;
 	
 }

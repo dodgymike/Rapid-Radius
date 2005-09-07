@@ -1,9 +1,9 @@
 /**
- * $Id: RadiusPacket.java,v 1.6 2005/09/07 17:38:33 wuttke Exp $
+ * $Id: RadiusPacket.java,v 1.7 2005/09/07 22:19:01 wuttke Exp $
  * Created on 07.04.2005
  * Released under the LGPL
  * @author Matthias Wuttke
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 package org.tinyradius.packet;
 
@@ -273,6 +273,21 @@ public class RadiusPacket {
 	}
 	
 	/**
+	 * Removes the last occurence of the attribute of the given
+	 * type from the packet.
+	 * @param type attribute type code
+	 */
+	public void removeLastAttribute(int type) {
+		List attrs = getAttributes(type);
+		if (attrs == null || attrs.size() == 0)
+			return;
+		
+		RadiusAttribute lastAttribute =
+			(RadiusAttribute)attrs.get(attrs.size() - 1);
+		removeAttribute(lastAttribute);
+	}
+	
+	/**
 	 * Removes all sub-attributes of the given vendor and
 	 * type.
 	 * @param vendorId vendor ID
@@ -451,6 +466,25 @@ public class RadiusPacket {
 		}
 		return result;
 	}
+	
+	/**
+	 * Returns the Vendor-Specific attribute for the given vendor ID.
+	 * If there is more than one Vendor-Specific
+	 * attribute with the given vendor ID, the first attribute found is
+	 * returned. If there is no such attribute, null is returned.
+	 * @param vendorId vendor ID of the attribute
+	 * @return the attribute or null if there is no such attribute
+	 * @deprecated use getVendorAttributes(int)
+	 * @see #getVendorAttributes(int)
+	 */
+	public VendorSpecificAttribute getVendorAttribute(int vendorId) {
+		for (Iterator i = getAttributes(VendorSpecificAttribute.VENDOR_SPECIFIC).iterator(); i.hasNext();) {
+			VendorSpecificAttribute vsa = (VendorSpecificAttribute)i.next();
+			if (vsa.getChildVendorId() == vendorId)
+				return vsa;
+		}
+		return null;
+	}
 
 	/**
 	 * Encodes this Radius packet and sends it to the specified output
@@ -618,6 +652,16 @@ public class RadiusPacket {
 	 */
 	public byte[] getAuthenticator() {		
 		return authenticator;
+	}
+	
+	/**
+	 * Sets the authenticator to be used for this Radius packet.
+	 * This method should seldomly be used.
+	 * Authenticators are created and managed by this class internally.
+	 * @param authenticator authenticator
+	 */
+	public void setAuthenticator(byte[] authenticator) {
+		this.authenticator = authenticator;
 	}
 	
 	/**

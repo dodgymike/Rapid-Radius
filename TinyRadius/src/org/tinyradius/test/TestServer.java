@@ -1,13 +1,13 @@
 /**
- * $Id: TestServer.java,v 1.3 2005/09/04 22:11:02 wuttke Exp $
+ * $Id: TestServer.java,v 1.4 2005/09/07 22:19:01 wuttke Exp $
  * Created on 08.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 package org.tinyradius.test;
 
 import java.io.IOException;
-import java.net.InetAddress;
+import java.net.InetSocketAddress;
 
 import org.tinyradius.packet.AccessRequest;
 import org.tinyradius.packet.RadiusPacket;
@@ -25,8 +25,8 @@ public class TestServer {
 	throws IOException, Exception {
 		RadiusServer server = new RadiusServer() {
 			// Authorize localhost/testing123
-			public String getSharedSecret(InetAddress client) {
-				if (client.getHostAddress().equals("127.0.0.1"))
+			public String getSharedSecret(InetSocketAddress client) {
+				if (client.getAddress().getHostAddress().equals("127.0.0.1"))
 					return "testing123";
 				else
 					return null;
@@ -41,7 +41,7 @@ public class TestServer {
 			}
 			
 			// Adds an attribute to the Access-Accept packet
-			public RadiusPacket accessRequestReceived(AccessRequest accessRequest, InetAddress client) 
+			public RadiusPacket accessRequestReceived(AccessRequest accessRequest, InetSocketAddress client) 
 			throws RadiusException {
 				System.out.println("Received Access-Request:\n" + accessRequest);
 				RadiusPacket packet = super.accessRequestReceived(accessRequest, client);
@@ -54,13 +54,17 @@ public class TestServer {
 				return packet;
 			}
 		};
+		if (args.length >= 1)
+			server.setAuthPort(Integer.parseInt(args[0]));
+		if (args.length >= 2)
+			server.setAcctPort(Integer.parseInt(args[1]));
 		
 		server.start(true, true);
 		
 		System.out.println("Server started.");
 		
-		Thread.sleep(1000*30);
-		System.out.println("Stop server (30 s expired)");
+		Thread.sleep(1000*3000);
+		System.out.println("Stop server (3000 s expired)");
 		server.stop();
 	}
 	

@@ -1,8 +1,8 @@
 /**
- * $Id: TestClient.java,v 1.2 2005/09/04 22:11:02 wuttke Exp $
+ * $Id: TestClient.java,v 1.3 2005/09/07 22:19:01 wuttke Exp $
  * Created on 08.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 package org.tinyradius.test;
 
@@ -38,12 +38,12 @@ public class TestClient {
 
 		// 1. Send Access-Request
 		AccessRequest ar = new AccessRequest(user, pass);
-		ar.setAuthProtocol(AccessRequest.AUTH_CHAP); // or AUTH_PAP
+		ar.setAuthProtocol(AccessRequest.AUTH_PAP); // or AUTH_CHAP
 		ar.addAttribute("NAS-Identifier", "this.is.my.nas-identifier.de");
 		ar.addAttribute("NAS-IP-Address", "192.168.0.100");
 		ar.addAttribute("Service-Type", "Login-User");
-		ar.addAttribute("Redirection-URL", "http://www.sourceforge.net/");
-		ar.addAttribute("Location-ID", "net.sourceforge.ap1");
+		ar.addAttribute("WISPr-Redirection-URL", "http://www.sourceforge.net/");
+		ar.addAttribute("WISPr-Location-ID", "net.sourceforge.ap1");
 		
 		System.out.println("Packet before it is sent\n" + ar + "\n");
 		RadiusPacket response = rc.authenticate(ar);

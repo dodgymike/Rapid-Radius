@@ -1,8 +1,8 @@
 /**
- * $Id: AccessRequest.java,v 1.1 2005/04/17 14:51:34 wuttke Exp $
+ * $Id: AccessRequest.java,v 1.2 2005/09/07 22:19:01 wuttke Exp $
  * Created on 08.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 package org.tinyradius.packet;
 
@@ -148,6 +148,8 @@ public class AccessRequest extends RadiusPacket {
 		if (userPassword != null) {
 			setAuthProtocol(AUTH_PAP);
 			this.password = decodePapPassword(userPassword.getAttributeData(), RadiusUtil.getUtf8Bytes(sharedSecret));
+			// copy truncated data
+			userPassword.setAttributeData(RadiusUtil.getUtf8Bytes(this.password));
 		} else if (chapPassword != null && chapChallenge != null) {
 			setAuthProtocol(AUTH_CHAP);
 			this.chapPassword = chapPassword.getAttributeData();
@@ -162,7 +164,9 @@ public class AccessRequest extends RadiusPacket {
 	 */
 	protected void encodeRequestAttributes(String sharedSecret) {
 		if (password == null || password.length() == 0)
-			throw new RuntimeException("no password set");
+			return;
+			// ok for proxied packets whose CHAP password is already encrypted
+			//throw new RuntimeException("no password set");
 		
 		if (getAuthProtocol().equals(AUTH_PAP)) {
 			byte[] pass = encodePapPassword(RadiusUtil.getUtf8Bytes(this.password), RadiusUtil.getUtf8Bytes(sharedSecret));
