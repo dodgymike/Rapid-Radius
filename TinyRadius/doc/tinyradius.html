@@ -122,6 +122,29 @@ should listen on the auth and/or the acct port. This method spawns new threads.<
 server.start(true, true);
 server.stop();</pre>
 
+
+<h3>EXAMPLE 4: How to implement a Radius proxy server</h3>
+
+<p>You need to subclass <code>org.tinyradius.proxy.RadiusProxy</code>.
+In addition to implementing the abstract methods from <code>RadiusServer</code>,
+you have to provide an implementation for the following method.</p>
+
+<pre>RadiusEndpoint getProxyServer(RadiusPacket packet, RadiusEndpoint client);</pre>
+
+<p>Using the provided client endpoint (containing the client's IP address,
+the port number as well as the shared secret) you have to decide whether
+the given Radius packet should be forwarded or if the TinyRadius server
+itself shall handle the packet.</p>
+
+<p>If you return <code>null</code>, the packet will be dealt with as
+usual. Otherwise, the packet will be proxied (adding a Proxy-State attribute)
+to the returned Radius server.</p>
+
+<p>For a complete example, please check the three classes <code>TestProxy</code>,
+<code>TestServer</code> and <code>TestClient</code>, which can be used to
+set up an easy proxying Radius infrastructure only with TinyRadius and
+only using &quot;localhost&quot;.</p>
+
 <hr/>
 
 <p>Please do not hesitate to contact me if you have got questions or
