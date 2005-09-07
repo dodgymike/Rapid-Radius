@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
-$Id: build.xml,v 1.8 2005/09/06 18:08:00 wuttke Exp $   
+$Id: build.xml,v 1.9 2005/09/07 17:38:33 wuttke Exp $   
 created 11.04.2005 18:05:36                                                        
 TinyRadius build file
 -->
@@ -9,7 +9,7 @@ TinyRadius build file
 	<property name="src" location="src"/>
 	<property name="build" location="build"/>
 	<property name="dist" location="dist"/>
-	<property name="version" value="0.9.4"/>
+	<property name="version" value="0.9.5"/>
 	<property name="classpath" value="lib/commons-logging.jar"/>
 	
 	<target name="init">
