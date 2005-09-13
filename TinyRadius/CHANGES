@@ -1,10 +1,11 @@
 TinyRadius Change Log
 
 Plans for 0.9.6: Asynchronous Radius client (see TODO)
-Plans for 0.9.5: Proxy support (thanks to glanzel)
 
 0.9.5:
 - further Radius packet type codes (COA, Disconnect)
+- implemented Radius proxy support (see org.tinyradius.proxy)
+  thanks to glanz
 
 0.9.4:
 - greatly improved dictionary support: new package

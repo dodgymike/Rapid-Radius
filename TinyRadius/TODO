@@ -1,4 +1,4 @@
-- include proxying support from glanzel - thanks!
 - implement asynchronous radius client for sending multiple requests
   in parallel while still waiting for responses to earlier packets
-- enhance build.xml: target for uploading to upload.sf.net
+
+- improve duplicate packet check: include packet length, maybe a checksum
