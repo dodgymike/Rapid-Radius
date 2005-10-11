@@ -2,10 +2,15 @@ TinyRadius Change Log
 
 Plans for 0.9.6: Asynchronous Radius client (see TODO)
 
+0.9.6:
+- bug fix: implicit conversion of byte to int failed
+  for values bigger than 127 (class VendorSpecificAttribute)
+  thanks to Aldir O. Brandao Jr!
+
 0.9.5:
 - further Radius packet type codes (COA, Disconnect)
 - implemented Radius proxy support (see org.tinyradius.proxy)
-  thanks to glanz
+  thanks to glanz!
 
 0.9.4:
 - greatly improved dictionary support: new package

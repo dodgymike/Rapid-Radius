@@ -1,8 +1,8 @@
 /**
- * $Id: RadiusProxyConnection.java,v 1.1 2005/09/07 22:19:01 wuttke Exp $
+ * $Id: RadiusProxyConnection.java,v 1.2 2005/10/11 14:18:27 wuttke Exp $
  * Created on 07.09.2005
- * @author Matthias Wuttke
- * @version $Revision: 1.1 $
+ * @author glanz, Matthias Wuttke
+ * @version $Revision: 1.2 $
  */
 package org.tinyradius.proxy;
 

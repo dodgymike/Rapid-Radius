@@ -1,8 +1,8 @@
 /**
- * $Id: VendorSpecificAttribute.java,v 1.4 2005/09/06 18:06:33 wuttke Exp $
+ * $Id: VendorSpecificAttribute.java,v 1.5 2005/10/11 14:14:36 wuttke Exp $
  * Created on 10.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 package org.tinyradius.attribute;
 
@@ -250,14 +250,14 @@ public class VendorSpecificAttribute extends RadiusAttribute {
 			throw new RadiusException("Vendor-Specific attribute too short: " + length);
 		
 		int vsaCode = data[offset];
-		int vsaLen = data[offset + 1] - 6;
+		int vsaLen = ((int)data[offset + 1] & 0x000000ff) - 6;
 		
 		if (vsaCode != VENDOR_SPECIFIC)
 			throw new RadiusException("not a Vendor-Specific attribute");
 		
 		// read vendor ID and vendor data
 		int vendorId = (data[offset + 2] << 24 | data[offset + 3] << 16 | 
-				   data[offset + 4] << 8 | data[offset + 5]);
+				   data[offset + 4] << 8 | ((int)data[offset + 5] & 0x000000ff));
 		setChildVendorId(vendorId);
 		
 		// validate sub-attribute structure
