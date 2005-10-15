@@ -1,8 +1,8 @@
 /**
- * $Id: VendorSpecificAttribute.java,v 1.5 2005/10/11 14:14:36 wuttke Exp $
+ * $Id: VendorSpecificAttribute.java,v 1.6 2005/10/15 11:35:29 wuttke Exp $
  * Created on 10.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 package org.tinyradius.attribute;
 
@@ -266,7 +266,7 @@ public class VendorSpecificAttribute extends RadiusAttribute {
 		while (pos < vsaLen) {
 			if (pos + 1 >= vsaLen)
 				throw new RadiusException("Vendor-Specific attribute malformed");
-			int vsaSubType = data[(offset + 6) + pos] & 0x0ff;
+			//int vsaSubType = data[(offset + 6) + pos] & 0x0ff;
 			int vsaSubLen = data[(offset + 6) + pos + 1] & 0x0ff;
 			pos += vsaSubLen;
 			count++;

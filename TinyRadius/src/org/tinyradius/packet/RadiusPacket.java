@@ -1,9 +1,9 @@
 /**
- * $Id: RadiusPacket.java,v 1.8 2005/09/13 13:00:21 wuttke Exp $
+ * $Id: RadiusPacket.java,v 1.9 2005/10/15 11:35:30 wuttke Exp $
  * Created on 07.04.2005
  * Released under the LGPL
  * @author Matthias Wuttke
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 package org.tinyradius.packet;
 
@@ -870,7 +870,6 @@ public class RadiusPacket {
 		rp.authenticator = authenticator;
 		
 		// load attributes
-		ArrayList attributes = new ArrayList(attributeCount);
 		pos = 0;
 		while (pos < attributeData.length) {
 			int attributeType = attributeData[pos] & 0x0ff;

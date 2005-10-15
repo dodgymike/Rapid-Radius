@@ -1,8 +1,8 @@
 /**
- * $Id: RadiusException.java,v 1.1 2005/04/17 14:51:33 wuttke Exp $
+ * $Id: RadiusException.java,v 1.2 2005/10/15 11:35:30 wuttke Exp $
  * Created on 10.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 package org.tinyradius.util;
 
@@ -19,5 +19,7 @@ public class RadiusException extends Exception {
 	public RadiusException(String message) {
 		super(message);
 	}
-	
+
+	private static final long serialVersionUID = 2201204523946051388L;
+
 }
