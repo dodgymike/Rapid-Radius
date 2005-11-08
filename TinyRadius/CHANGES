@@ -6,6 +6,8 @@ Plans for 0.9.6: Asynchronous Radius client (see TODO)
 - bug fix: implicit conversion of byte to int failed
   for values bigger than 127 (class VendorSpecificAttribute)
   thanks to Aldir O. Brandao Jr!
+- bug fix: SocketException terminated Radius listen thread
+  in RadiusServer class
 
 0.9.5:
 - further Radius packet type codes (COA, Disconnect)

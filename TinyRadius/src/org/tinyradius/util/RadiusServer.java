@@ -1,8 +1,8 @@
 /**
- * $Id: RadiusServer.java,v 1.6 2005/09/07 22:19:01 wuttke Exp $
+ * $Id: RadiusServer.java,v 1.7 2005/11/08 12:37:41 wuttke Exp $
  * Created on 09.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 package org.tinyradius.util;
 
@@ -127,6 +127,7 @@ public abstract class RadiusServer {
 	 */
 	public void stop() {
 		logger.info("stopping Radius server");
+		closing = true;
 		if (authSocket != null)
 			authSocket.close();
 		if (acctSocket != null)
@@ -288,8 +289,14 @@ public abstract class RadiusServer {
 				try {
 					s.receive(packetIn);
 				} catch (SocketException se) {
-					// end thread
-					return;
+					if (closing) {
+						// end thread
+						return;
+					} else {
+						// retry s.receive()
+						logger.error("SocketException during s.receive() -> retry", se);
+						continue;
+					}
 				}
 				
 				// check client
@@ -477,6 +484,7 @@ public abstract class RadiusServer {
 	private int socketTimeout = 3000;
 	private List receivedPackets = new LinkedList();
 	private long duplicateInterval = 30000; // 30 s
+	private boolean closing = false;
 	private static Log logger = LogFactory.getLog(RadiusServer.class);
 	
 }
