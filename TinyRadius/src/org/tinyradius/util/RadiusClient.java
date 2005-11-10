@@ -1,8 +1,8 @@
 /**
- * $Id: RadiusClient.java,v 1.6 2005/09/07 22:19:01 wuttke Exp $
+ * $Id: RadiusClient.java,v 1.7 2005/11/10 10:20:21 wuttke Exp $
  * Created on 09.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 package org.tinyradius.util;
 
@@ -13,6 +13,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -249,8 +250,12 @@ public class RadiusClient {
 				return makeRadiusPacket(packetIn, request);
 			} catch (IOException ioex) {
 				if (i == getRetryCount()) {
-					if (logger.isErrorEnabled())
-						logger.error("communication failure, no more retries", ioex);
+					if (logger.isErrorEnabled()) {
+						if (ioex instanceof SocketTimeoutException)
+							logger.error("communication failure (timeout), no more retries");
+						else
+							logger.error("communication failure, no more retries", ioex);
+					}
 					throw ioex;
 				}
 				if (logger.isInfoEnabled())
