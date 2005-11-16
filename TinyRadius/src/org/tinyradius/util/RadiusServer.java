@@ -1,8 +1,8 @@
 /**
- * $Id: RadiusServer.java,v 1.7 2005/11/08 12:37:41 wuttke Exp $
+ * $Id: RadiusServer.java,v 1.8 2005/11/16 16:21:15 wuttke Exp $
  * Created on 09.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 package org.tinyradius.util;
 
@@ -15,6 +15,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -100,8 +101,13 @@ public abstract class RadiusServer {
 					try {
 						logger.info("starting RadiusAuthListener on port " + getAuthPort());
 						listenAuth();
+						logger.info("RadiusAuthListener is being terminated");
 					} catch(Exception e) {
 						e.printStackTrace();
+						logger.fatal("auth thread stopped by exception", e);
+					} finally {
+						authSocket.close();
+						logger.debug("auth socket closed");
 					}
 				}
 			}.start();
@@ -114,8 +120,13 @@ public abstract class RadiusServer {
 					try {
 						logger.info("starting RadiusAcctListener on port " + getAcctPort());
 						listenAcct();
+						logger.info("RadiusAcctListener is being terminated");
 					} catch(Exception e) {
 						e.printStackTrace();
+						logger.fatal("auth thread stopped by exception", e);
+					} finally {
+						acctSocket.close();
+						logger.debug("acct socket closed");
 					}
 				}
 			}.start();
@@ -287,7 +298,12 @@ public abstract class RadiusServer {
 			try {
 				// receive packet
 				try {
+					logger.debug("about to call socket.receive");
 					s.receive(packetIn);
+					if (logger.isDebugEnabled()) {
+						logger.debug("return from blocking socket.receive call");
+						logger.debug("receive buffer size = " + s.getReceiveBufferSize());
+					}
 				} catch (SocketException se) {
 					if (closing) {
 						// end thread
@@ -298,7 +314,7 @@ public abstract class RadiusServer {
 						continue;
 					}
 				}
-				
+								
 				// check client
 				InetSocketAddress localAddress = (InetSocketAddress)s.getLocalSocketAddress();
 				InetSocketAddress remoteAddress = new InetSocketAddress(packetIn.getAddress(), packetIn.getPort());				
@@ -327,6 +343,7 @@ public abstract class RadiusServer {
 					logger.info("no response sent");						
 			} catch (SocketTimeoutException ste) {
 				// this is expected behaviour
+				logger.debug("normal socket timeout");
 			} catch (IOException ioe) {
 				// error while reading/writing socket
 				logger.error("communication error", ioe);
@@ -454,6 +471,8 @@ public abstract class RadiusServer {
 		long now = System.currentTimeMillis();
 		long intervalStart = now - getDuplicateInterval();
 		
+		byte[] authenticator = packet.getAuthenticator();
+		
 		for (Iterator i = receivedPackets.iterator(); i.hasNext();) {
 			ReceivedPacket p = (ReceivedPacket)i.next();
 			if (p.receiveTime < intervalStart) {
@@ -461,8 +480,14 @@ public abstract class RadiusServer {
 				i.remove();
 			} else {
 				if (p.address.equals(address) && p.packetIdentifier == packet.getPacketIdentifier()) {
-					// packet is duplicate
-					return true;
+					if (authenticator != null && p.authenticator != null) {
+						// packet is duplicate if stored authenticator is equal
+						// to the packet authenticator
+						return Arrays.equals(p.authenticator, authenticator);
+					} else {
+						// should not happen, packet is duplicate
+						return true;
+					}
 				}
 			}
 		}
@@ -472,6 +497,7 @@ public abstract class RadiusServer {
 		rp.address = address;
 		rp.packetIdentifier = packet.getPacketIdentifier();
 		rp.receiveTime = now;
+		rp.authenticator = authenticator;
 		receivedPackets.add(rp);
 		return false;
 	}
@@ -509,5 +535,10 @@ class ReceivedPacket {
 	 * The address of the host who sent the packet.
 	 */
 	public InetSocketAddress address;
+	
+	/**
+	 * Authenticator of the received packet.
+	 */
+	public byte[] authenticator;
 	
 }
