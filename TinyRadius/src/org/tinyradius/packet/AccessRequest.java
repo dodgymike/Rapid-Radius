@@ -1,8 +1,8 @@
 /**
- * $Id: AccessRequest.java,v 1.2 2005/09/07 22:19:01 wuttke Exp $
+ * $Id: AccessRequest.java,v 1.3 2005/11/17 18:36:34 wuttke Exp $
  * Created on 08.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 package org.tinyradius.packet;
 
@@ -10,6 +10,8 @@ import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.tinyradius.attribute.RadiusAttribute;
 import org.tinyradius.attribute.StringAttribute;
 import org.tinyradius.util.RadiusException;
@@ -258,7 +260,15 @@ public class AccessRequest extends RadiusPacket {
 	 * @param sharedSecret shared secret
 	 * @return decrypted password
 	 */
-	private String decodePapPassword(byte[] encryptedPass, byte[] sharedSecret) {
+	private String decodePapPassword(byte[] encryptedPass, byte[] sharedSecret) 
+	throws RadiusException {
+		if (encryptedPass == null || encryptedPass.length < 16) {
+			// PAP passwords require at least 16 bytes
+			logger.warn("invalid Radius packet: User-Password attribute with malformed PAP password, length = " +
+					encryptedPass.length + ", but length must be greater than 15");
+			throw new RadiusException("malformed User-Password attribute");
+		}
+		
 		MessageDigest md5 = getMd5Digest();
 	    md5.reset();
 	    md5.update(sharedSecret);
@@ -400,5 +410,10 @@ public class AccessRequest extends RadiusPacket {
 	 * Radius attribute type for CHAP-Challenge attribute.
 	 */
 	private static final int CHAP_CHALLENGE = 60;
+	
+	/**
+	 * Logger for logging information about malformed packets
+	 */
+	private static Log logger = LogFactory.getLog(AccessRequest.class);
 		
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
-$Id: build.xml,v 1.11 2005/10/11 14:18:27 wuttke Exp $   
+$Id: build.xml,v 1.12 2005/11/17 18:36:33 wuttke Exp $   
 created 11.04.2005 18:05:36                                                        
 TinyRadius build file
 -->
@@ -18,7 +18,7 @@ TinyRadius build file
 	</target>
 	
 	<target name="compile" depends="init">
-        <javac srcdir="${src}" destdir="${build}" classpath="${classpath}"/>
+        <javac srcdir="${src}" destdir="${build}" classpath="${classpath}" debug="true"/>
     </target>
 
     <target name="jar" depends="compile">
