@@ -1,13 +1,15 @@
 TinyRadius Change Log
 
-Plans for 0.9.6: Asynchronous Radius client (see TODO)
+Plans for 0.9.7: Asynchronous Radius client (see TODO)
 
 0.9.6:
 - bug fix: implicit conversion of byte to int failed
   for values bigger than 127 (class VendorSpecificAttribute)
-  thanks to Aldir O. Brandao Jr!
+  thanks to Aldir O. Brandao Jr and to Bjørn Nordbø!
 - bug fix: SocketException terminated Radius listen thread
   in RadiusServer class
+- improved duplicate packet check by using Radius Authenticator
+  field which includes a checksum over the whole packet
 
 0.9.5:
 - further Radius packet type codes (COA, Disconnect)

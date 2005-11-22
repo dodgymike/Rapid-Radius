@@ -1,4 +1,2 @@
 - implement asynchronous radius client for sending multiple requests
   in parallel while still waiting for responses to earlier packets
-
-- improve duplicate packet check: include packet length, maybe a checksum
