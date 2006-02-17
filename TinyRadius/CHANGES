@@ -6,6 +6,7 @@ Plans for 1.0: Asynchronous Radius client (see TODO)
 - bug fix: request authenticator for accounting request packets
   has not been checked, added
   AccountingRequest.checkRequestAuthenticator()
+  thanks to Radovan Semancik!
 
 0.9.6:
 - bug fix: implicit conversion of byte to int failed
