@@ -1,6 +1,12 @@
 TinyRadius Change Log
 
-Plans for 0.9.7: Asynchronous Radius client (see TODO)
+Plans for 1.0: Asynchronous Radius client (see TODO)
+
+0.9.7:
+- bug fix: request authenticator for accounting request packets
+  has not been checked, added
+  AccountingRequest.checkRequestAuthenticator()
+  thanks to Radovan Semancik!
 
 0.9.6:
 - bug fix: implicit conversion of byte to int failed

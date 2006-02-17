@@ -1,8 +1,8 @@
 /**
- * $Id: TestClient.java,v 1.3 2005/09/07 22:19:01 wuttke Exp $
+ * $Id: TestClient.java,v 1.4 2006/02/17 18:14:54 wuttke Exp $
  * Created on 08.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 package org.tinyradius.test;
 
@@ -49,7 +49,7 @@ public class TestClient {
 		RadiusPacket response = rc.authenticate(ar);
 		System.out.println("Packet after it was sent\n" + ar + "\n");
 		System.out.println("Response\n" + response + "\n");
-		
+
 		// 2. Send Accounting-Request
 		AccountingRequest acc = new AccountingRequest("mw", AccountingRequest.ACCT_STATUS_TYPE_START);
 		acc.addAttribute("Acct-Session-Id", "1234567890");

@@ -1,8 +1,8 @@
 /**
- * $Id: TestServer.java,v 1.5 2005/11/08 12:37:41 wuttke Exp $
+ * $Id: TestServer.java,v 1.6 2006/02/17 18:14:54 wuttke Exp $
  * Created on 08.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 package org.tinyradius.test;
 
@@ -63,8 +63,8 @@ public class TestServer {
 		
 		System.out.println("Server started.");
 		
-		Thread.sleep(1000*10);
-		System.out.println("Stop server (3000 s expired)");
+		Thread.sleep(1000*60*30);
+		System.out.println("Stop server");
 		server.stop();
 	}
 	

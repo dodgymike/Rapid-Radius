@@ -1,8 +1,8 @@
 /**
- * $Id: AccountingRequest.java,v 1.1 2005/04/17 14:51:34 wuttke Exp $
+ * $Id: AccountingRequest.java,v 1.2 2006/02/17 18:14:54 wuttke Exp $
  * Created on 09.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 package org.tinyradius.packet;
 
@@ -136,6 +136,17 @@ public class AccountingRequest extends RadiusPacket {
         md5.update(attributes, 0, attributes.length);
         md5.update(RadiusUtil.getUtf8Bytes(sharedSecret));
         return md5.digest();
+	}
+	
+	/**
+	 * Checks the received request authenticator as specified by RFC 2866.
+	 */
+	protected void checkRequestAuthenticator(String sharedSecret, int packetLength, byte[] attributes) throws RadiusException {
+		byte[] expectedAuthenticator = updateRequestAuthenticator(sharedSecret, packetLength, attributes);
+		byte[] receivedAuth = getAuthenticator();
+		for (int i = 0; i < 16; i++)
+			if (expectedAuthenticator[i] != receivedAuth[i])
+				throw new RadiusException("request authenticator invalid");
 	}
 	
 	/**
