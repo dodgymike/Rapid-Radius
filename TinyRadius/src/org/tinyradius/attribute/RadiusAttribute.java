@@ -1,9 +1,9 @@
 /**
- * $Id: RadiusAttribute.java,v 1.3 2005/09/04 22:11:03 wuttke Exp $
+ * $Id: RadiusAttribute.java,v 1.4 2006/02/20 23:37:38 wuttke Exp $
  * Created on 07.04.2005
  * Released under the terms of the LGPL
  * @author Matthias Wuttke
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 package org.tinyradius.attribute;
 
@@ -152,8 +152,8 @@ public class RadiusAttribute {
 	throws RadiusException {
 		if (length < 2)
 			throw new RadiusException("attribute length too small: " + length);
-		int attrType = data[offset];
-		int attrLen = data[offset + 1];
+		int attrType = data[offset] & 0x0ff;
+		int attrLen = data[offset + 1] & 0x0ff;
 		byte[] attrData = new byte[attrLen - 2];
 		System.arraycopy(data, offset + 2, attrData, 0, attrLen - 2);
 		setAttributeType(attrType);
