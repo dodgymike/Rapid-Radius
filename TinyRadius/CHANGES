@@ -2,6 +2,9 @@ TinyRadius Change Log
 
 Plans for 1.0: Asynchronous Radius client (see TODO)
 
+0.9.8:
+- small bug fix in attribute class
+
 0.9.7:
 - bug fix: request authenticator for accounting request packets
   has not been checked, added
