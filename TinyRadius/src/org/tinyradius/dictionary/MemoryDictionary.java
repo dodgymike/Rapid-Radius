@@ -1,8 +1,8 @@
 /**
- * $Id: MemoryDictionary.java,v 1.1 2005/09/04 22:11:00 wuttke Exp $
+ * $Id: MemoryDictionary.java,v 1.2 2006/09/24 10:06:38 wuttke Exp $
  * Created on 28.08.2005
  * @author mw
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 package org.tinyradius.dictionary;
 
@@ -43,7 +43,10 @@ implements WritableDictionary {
 	 */
 	public AttributeType getAttributeTypeByCode(int vendorCode, int typeCode) {
 		Map vendorAttributes = (Map)attributesByCode.get(new Integer(vendorCode));
-		return (AttributeType)vendorAttributes.get(new Integer(typeCode));
+		if (vendorAttributes == null)
+			return null;
+		else
+			return (AttributeType)vendorAttributes.get(new Integer(typeCode));
 	}
 	
 	/**
