@@ -1,8 +1,8 @@
 /**
- * $Id: RadiusUtil.java,v 1.1 2005/04/17 14:51:33 wuttke Exp $
+ * $Id: RadiusUtil.java,v 1.2 2006/11/06 19:32:06 wuttke Exp $
  * Created on 09.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 package org.tinyradius.util;
 
@@ -49,12 +49,13 @@ public class RadiusUtil {
 	 */
 	public static String getHexString(byte[] data) {
 		StringBuffer hex = new StringBuffer("0x");
-		for (int i = 0; i < data.length; i++) {
-			String digit = Integer.toString(data[i] & 0x0ff, 16);
-			if (digit.length() < 2)
-				hex.append('0');
-			hex.append(digit);
-		}
+		if (data != null)
+			for (int i = 0; i < data.length; i++) {
+				String digit = Integer.toString(data[i] & 0x0ff, 16);
+				if (digit.length() < 2)
+					hex.append('0');
+				hex.append(digit);
+			}
 		return hex.toString();
 	}
 	
