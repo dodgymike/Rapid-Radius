@@ -1,8 +1,8 @@
 /**
- * $Id: RadiusServer.java,v 1.8 2005/11/16 16:21:15 wuttke Exp $
+ * $Id: RadiusServer.java,v 1.9 2007/03/27 14:09:24 wuttke Exp $
  * Created on 09.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 package org.tinyradius.util;
 
@@ -123,7 +123,7 @@ public abstract class RadiusServer {
 						logger.info("RadiusAcctListener is being terminated");
 					} catch(Exception e) {
 						e.printStackTrace();
-						logger.fatal("auth thread stopped by exception", e);
+						logger.fatal("acct thread stopped by exception", e);
 					} finally {
 						acctSocket.close();
 						logger.debug("acct socket closed");
