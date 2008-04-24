@@ -1,8 +1,8 @@
 /**
- * $Id: RadiusServer.java,v 1.10 2007/03/27 14:24:47 wuttke Exp $
+ * $Id: RadiusServer.java,v 1.11 2008/04/24 05:22:50 wuttke Exp $
  * Created on 09.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 package org.tinyradius.util;
 
@@ -473,32 +473,35 @@ public abstract class RadiusServer {
 		
 		byte[] authenticator = packet.getAuthenticator();
 		
-		for (Iterator i = receivedPackets.iterator(); i.hasNext();) {
-			ReceivedPacket p = (ReceivedPacket)i.next();
-			if (p.receiveTime < intervalStart) {
-				// packet is older than duplicate interval
-				i.remove();
-			} else {
-				if (p.address.equals(address) && p.packetIdentifier == packet.getPacketIdentifier()) {
-					if (authenticator != null && p.authenticator != null) {
-						// packet is duplicate if stored authenticator is equal
-						// to the packet authenticator
-						return Arrays.equals(p.authenticator, authenticator);
-					} else {
-						// should not happen, packet is duplicate
-						return true;
+		synchronized(receivedPackets) {
+			for (Iterator i = receivedPackets.iterator(); i.hasNext();) {
+				ReceivedPacket p = (ReceivedPacket)i.next();
+				if (p.receiveTime < intervalStart) {
+					// packet is older than duplicate interval
+					i.remove();
+				} else {
+					if (p.address.equals(address) && p.packetIdentifier == packet.getPacketIdentifier()) {
+						if (authenticator != null && p.authenticator != null) {
+							// packet is duplicate if stored authenticator is equal
+							// to the packet authenticator
+							return Arrays.equals(p.authenticator, authenticator);
+						} else {
+							// should not happen, packet is duplicate
+							return true;
+						}
 					}
 				}
 			}
-		}
 		
-		// add packet to receive list
-		ReceivedPacket rp = new ReceivedPacket();
-		rp.address = address;
-		rp.packetIdentifier = packet.getPacketIdentifier();
-		rp.receiveTime = now;
-		rp.authenticator = authenticator;
-		receivedPackets.add(rp);
+			// add packet to receive list
+			ReceivedPacket rp = new ReceivedPacket();
+			rp.address = address;
+			rp.packetIdentifier = packet.getPacketIdentifier();
+			rp.receiveTime = now;
+			rp.authenticator = authenticator;
+			receivedPackets.add(rp);
+		}
+
 		return false;
 	}
 
