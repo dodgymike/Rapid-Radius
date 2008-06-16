@@ -1,9 +1,9 @@
 /**
- * $Id: RadiusPacket.java,v 1.11 2006/02/20 23:44:49 wuttke Exp $
+ * $Id: RadiusPacket.java,v 1.12 2008/06/16 22:20:34 wuttke Exp $
  * Created on 07.04.2005
  * Released under the LGPL
  * @author Matthias Wuttke
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 package org.tinyradius.packet;
 
@@ -857,7 +857,10 @@ public class RadiusPacket {
 		while (pos < attributeData.length) {
 			if (pos + 1 >= attributeData.length)
 				throw new RadiusException("bad packet: attribute length mismatch");
-			pos += attributeData[pos + 1] & 0x0ff;
+			int attributeLength = attributeData[pos + 1] & 0x0ff;
+			if (attributeLength < 2)
+				throw new RadiusException("bad packet: invalid attribute length");
+			pos += attributeLength;
 			attributeCount++;
 		}
 		if (pos != attributeData.length)
