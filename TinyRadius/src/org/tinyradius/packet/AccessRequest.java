@@ -1,8 +1,8 @@
 /**
- * $Id: AccessRequest.java,v 1.3 2005/11/17 18:36:34 wuttke Exp $
+ * $Id: AccessRequest.java,v 1.4 2009/10/09 14:57:39 wuttke Exp $
  * Created on 08.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 package org.tinyradius.packet;
 
@@ -226,30 +226,20 @@ public class AccessRequest extends RadiusPacket {
 	
 	    // digest shared secret and authenticator
 	    MessageDigest md5 = getMd5Digest();
-	    md5.reset();
-	    md5.update(sharedSecret);
-	    md5.update(getAuthenticator());
-	    byte bn[] = md5.digest();
-	
-	    // perform the XOR as specified by RFC 2865
-	    for (int i = 0; i < 16; i++){
-	        encryptedPass[i] = (byte)(bn[i] ^ encryptedPass[i]);
-	    }
-	
-	    if (encryptedPass.length > 16) {
-	        for (int i = 16; i < encryptedPass.length; i += 16) {
-	            md5.reset();
-	            md5.update(sharedSecret);
-	            // add the previous (encrypted) 16 bytes of the user password
-	            md5.update(encryptedPass, i - 16, 16);
-	            bn = md5.digest();
-	
-	            // perform the XOR as specified by RFC 2865.
-	            for (int j = 0; j < 16; j++) {
-	                encryptedPass[i + j] = (byte)(bn[j] ^ encryptedPass[i + j]);
-	            }
-	        }
-	    }
+		byte[] lastBlock = new byte[16];
+		
+		for (int i = 0; i < encryptedPass.length; i+=16) {
+			md5.reset();
+			md5.update(sharedSecret);
+			md5.update(i == 0 ? getAuthenticator() : lastBlock);
+			byte bn[] = md5.digest();
+				
+			System.arraycopy(encryptedPass, i, lastBlock, 0, 16);
+		
+			// perform the XOR as specified by RFC 2865.
+			for (int j = 0; j < 16; j++)
+				encryptedPass[i + j] = (byte)(bn[j] ^ encryptedPass[i + j]);
+		}
 	    
 	    return encryptedPass;
 	}
@@ -270,31 +260,21 @@ public class AccessRequest extends RadiusPacket {
 		}
 		
 		MessageDigest md5 = getMd5Digest();
-	    md5.reset();
-	    md5.update(sharedSecret);
-	    md5.update(getAuthenticator());
-	    byte bn[] = md5.digest();
-	
-	    // perform the XOR as specified by RFC 2865
-	    for (int i = 0; i < 16; i++){
-	        encryptedPass[i] = (byte)(bn[i] ^ encryptedPass[i]);
-	    }
-	
-	    if (encryptedPass.length > 16) {
-	        for (int i = 16; i < encryptedPass.length; i += 16) {
-	            md5.reset();
-	            md5.update(sharedSecret);
-	            // add the previous (encrypted) 16 bytes of the user password
-	            md5.update(encryptedPass, i - 16, 16);
-	            bn = md5.digest();
-	
-	            // perform the XOR as specified by RFC 2865.
-	            for (int j = 0; j < 16; j++) {
-	                encryptedPass[i + j] = (byte)(bn[j] ^ encryptedPass[i + j]);
-	            }
-	        }
-	    }
-	    
+		byte[] lastBlock = new byte[16];
+		
+		for (int i = 0; i < encryptedPass.length; i+=16) {
+			md5.reset();
+			md5.update(sharedSecret);
+			md5.update(i == 0 ? getAuthenticator() : lastBlock);
+			byte bn[] = md5.digest();
+				
+			System.arraycopy(encryptedPass, i, lastBlock, 0, 16);
+		
+			// perform the XOR as specified by RFC 2865.
+			for (int j = 0; j < 16; j++)
+				encryptedPass[i + j] = (byte)(bn[j] ^ encryptedPass[i + j]);
+		}
+		
 	    // remove trailing zeros
 	    int len = encryptedPass.length;
 	    while (len > 0 && encryptedPass[len - 1] == 0)
