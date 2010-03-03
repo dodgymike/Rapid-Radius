@@ -1,8 +1,8 @@
 /**
- * $Id: AccessRequest.java,v 1.4 2009/10/09 14:57:39 wuttke Exp $
+ * $Id: AccessRequest.java,v 1.5 2010/03/03 09:27:07 wuttke Exp $
  * Created on 08.04.2005
  * @author Matthias Wuttke
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 package org.tinyradius.packet;
 
@@ -156,6 +156,11 @@ public class AccessRequest extends RadiusPacket {
 			setAuthProtocol(AUTH_CHAP);
 			this.chapPassword = chapPassword.getAttributeData();
 			this.chapChallenge = chapChallenge.getAttributeData();
+		} else if (chapPassword != null && getAuthenticator().length == 16) {
+			// thanks to Guillaume Tartayre
+            setAuthProtocol(AUTH_CHAP);
+            this.chapPassword = chapPassword.getAttributeData();
+            this.chapChallenge = getAuthenticator();
 		} else
 			throw new RadiusException("Access-Request: User-Password or CHAP-Password/CHAP-Challenge missing");
 	}
