@@ -158,6 +158,10 @@ public class AccessRequest extends RadiusPacket {
 		}
 	}
 
+	public byte[] getPeerChallenge() {
+		return peerChallenge;
+	}
+
 	/**
 	 * Decrypts the User-Password attribute.
 	 * @see org.tinyradius.packet.RadiusPacket#decodeRequestAttributes(java.lang.String)
@@ -168,6 +172,7 @@ public class AccessRequest extends RadiusPacket {
 		RadiusAttribute userPassword = getAttribute(USER_PASSWORD);
 		RadiusAttribute chapPassword = getAttribute(CHAP_PASSWORD);
 		RadiusAttribute chapChallenge = getAttribute(CHAP_CHALLENGE);
+		
 		RadiusAttribute mschapv2Response = getVendorAttribute(MS_VENDOR_ID, MSCHAPV2_RESPONSE);
 		RadiusAttribute mschapv2Challenge = getVendorAttribute(MS_VENDOR_ID, MSCHAPV2_CHALLENGE);
 		
@@ -179,7 +184,8 @@ public class AccessRequest extends RadiusPacket {
 		} else if(mschapv2Response != null && mschapv2Challenge != null) {
 			setAuthProtocol(AUTH_MSCHAPV2);
 			this.chapChallenge = mschapv2Challenge.getAttributeData();
-			this.chapPassword = mschapv2Response.getAttributeData();
+			this.chapPassword = getMSCHAPV2Password(mschapv2Response.getAttributeData());
+			this.peerChallenge = getMSCHAPV2PeerChallenge(mschapv2Response.getAttributeData());
 		} else if (chapPassword != null && chapChallenge != null) {
 			setAuthProtocol(AUTH_CHAP);
 			this.chapPassword = chapPassword.getAttributeData();
@@ -191,6 +197,43 @@ public class AccessRequest extends RadiusPacket {
             this.chapChallenge = getAuthenticator();
 		} else
 			throw new RadiusException("Access-Request: User-Password or CHAP-Password/CHAP-Challenge missing");
+	}
+
+	private byte[] getMSCHAPV2PeerChallenge(byte[] attributeData) throws RadiusException {
+		validateMSCHAP2ResponseAttribute(attributeData);
+		
+		int pcStart = 2; // Should be 4?? 
+		int pcLength = 16;
+		return copyBytes(attributeData, pcStart, pcLength);
+	}
+
+	private byte[] getMSCHAPV2Password(byte[] attributeData) throws RadiusException {
+		validateMSCHAP2ResponseAttribute(attributeData);
+
+		int pStart = 26; // Should be 28??
+		int pLength = 24;
+
+		return copyBytes(attributeData, pStart, pLength);
+	}
+
+	private byte[] copyBytes(byte[] attributeData, int start, int length) {
+		byte[] rv = new byte[length];
+		for(int i = start,j=0; i < (start + length); i++,j++) {
+			rv[j] = attributeData[i];
+		}
+		
+		return rv;
+	}
+
+	private void validateMSCHAP2ResponseAttribute(byte[] attributeData)	throws RadiusException {
+		// check this is a MS-CHAP2-Response packet
+		if(attributeData.length != 50) {
+			throw new RadiusException("Invalid MSCHAPV2-Response attribute length");
+		}
+		int vendorType = new Integer(attributeData[0]);
+		if(vendorType != 25) {
+//			throw new RadiusException("Invalid MSCHAPV2-Response attribute type");
+		}
 	}
 
 	/**
@@ -402,6 +445,11 @@ public class AccessRequest extends RadiusPacket {
 	private byte[] chapChallenge;
 
 	/**
+	 * Peer Challenge from a decoded MSCHAPV2 Access-Request
+	 */
+	private byte[] peerChallenge;
+	
+	/**
 	 * Random generator
 	 */
 	private static SecureRandom random = new SecureRandom();
@@ -440,5 +488,4 @@ public class AccessRequest extends RadiusPacket {
 	 * Logger for logging information about malformed packets
 	 */
 	private static Log logger = LogFactory.getLog(AccessRequest.class);
-		
 }
