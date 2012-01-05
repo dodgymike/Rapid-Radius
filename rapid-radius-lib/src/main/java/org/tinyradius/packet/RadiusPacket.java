@@ -464,8 +464,8 @@ public class RadiusPacket {
 	 * @param vendorId vendor ID of the attribute(s)
 	 * @return List with VendorSpecificAttribute objects, never null
 	 */
-	public List getVendorAttributes(int vendorId) {
-		LinkedList result = new LinkedList();
+	public List<VendorSpecificAttribute> getVendorAttributes(int vendorId) {
+		LinkedList<VendorSpecificAttribute> result = new LinkedList<VendorSpecificAttribute>();
 		for (Iterator i = attributes.iterator(); i.hasNext();) {
 			RadiusAttribute a = (RadiusAttribute)i.next();
 			if (a instanceof VendorSpecificAttribute) {
@@ -475,6 +475,25 @@ public class RadiusPacket {
 			}
 		}
 		return result;
+	}
+	
+	/**
+	 * Returns a vendor specific sub attribute
+	 * @param vendorId
+	 * @param attributeId
+	 * @return the sub attribute or null if not present
+	 */
+	public RadiusAttribute getVendorAttribute(int vendorId, int attributeId) {
+		List<VendorSpecificAttribute> vendorAttributes = getVendorAttributes(vendorId);
+		
+		for(VendorSpecificAttribute vsa: vendorAttributes) {
+			RadiusAttribute subAttribute = vsa.getSubAttribute(attributeId);
+			if(subAttribute != null) {
+				return subAttribute;
+			}
+		}
+		
+		return null;
 	}
 	
 	/**

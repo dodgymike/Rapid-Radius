@@ -31,6 +31,17 @@ public class AccessRequest extends RadiusPacket {
 	 * Challenged Handshake Authentication Protocol
 	 */
 	public static final String AUTH_CHAP = "chap";
+	
+	/**
+	 * MSCHAP-V2
+	 * See: https://tools.ietf.org/html/rfc2759 and https://tools.ietf.org/html/rfc2548
+	 */
+	public static final String AUTH_MSCHAPV2 = "mschap-v2";
+
+	/**
+	 * Microsoft Radius Vendor ID
+	 */
+	private static final int MS_VENDOR_ID = 311;
 
 	/**
 	 * Constructs an empty Access-Request packet.
@@ -113,10 +124,18 @@ public class AccessRequest extends RadiusPacket {
 	 * @param authProtocol AUTH_PAP or AUTH_CHAP
 	 */
 	public void setAuthProtocol(String authProtocol) {
-		if (authProtocol != null && (authProtocol.equals(AUTH_PAP) || authProtocol.equals(AUTH_CHAP)))
+		if (
+				authProtocol != null 
+				&& (
+						authProtocol.equals(AUTH_PAP) 
+						|| authProtocol.equals(AUTH_CHAP)
+						|| authProtocol.equals(AUTH_MSCHAPV2)
+					)
+		) {
 			this.authProtocol = authProtocol;
-		else
-			throw new IllegalArgumentException("protocol must be pap or chap");
+		} else {
+			throw new IllegalArgumentException("protocol must be pap, chap or mschap-v2");
+		}
 	}
 	
 	/**
@@ -130,10 +149,13 @@ public class AccessRequest extends RadiusPacket {
 	throws RadiusException {
 		if (plaintext == null || plaintext.length() == 0)
 			throw new IllegalArgumentException("password is empty");
-		if (getAuthProtocol().equals(AUTH_CHAP))
+		if (getAuthProtocol().equals(AUTH_CHAP)) {
 			return verifyChapPassword(plaintext);
-		else
+		} else if(AUTH_MSCHAPV2.equals(getAuthProtocol())) {
+			throw new RuntimeException("Not yet implemented");
+		} else {
 			return getUserPassword().equals(plaintext);
+		}
 	}
 
 	/**
@@ -146,12 +168,18 @@ public class AccessRequest extends RadiusPacket {
 		RadiusAttribute userPassword = getAttribute(USER_PASSWORD);
 		RadiusAttribute chapPassword = getAttribute(CHAP_PASSWORD);
 		RadiusAttribute chapChallenge = getAttribute(CHAP_CHALLENGE);
+		RadiusAttribute mschapv2Response = getVendorAttribute(MS_VENDOR_ID, MSCHAPV2_RESPONSE);
+		RadiusAttribute mschapv2Challenge = getVendorAttribute(MS_VENDOR_ID, MSCHAPV2_CHALLENGE);
 		
 		if (userPassword != null) {
 			setAuthProtocol(AUTH_PAP);
 			this.password = decodePapPassword(userPassword.getAttributeData(), RadiusUtil.getUtf8Bytes(sharedSecret));
 			// copy truncated data
 			userPassword.setAttributeData(RadiusUtil.getUtf8Bytes(this.password));
+		} else if(mschapv2Response != null && mschapv2Challenge != null) {
+			setAuthProtocol(AUTH_MSCHAPV2);
+			this.chapChallenge = mschapv2Challenge.getAttributeData();
+			this.chapPassword = mschapv2Response.getAttributeData();
 		} else if (chapPassword != null && chapChallenge != null) {
 			setAuthProtocol(AUTH_CHAP);
 			this.chapPassword = chapPassword.getAttributeData();
@@ -186,6 +214,8 @@ public class AccessRequest extends RadiusPacket {
 			removeAttributes(CHAP_CHALLENGE);
 			addAttribute(new RadiusAttribute(CHAP_PASSWORD, pass));
 			addAttribute(new RadiusAttribute(CHAP_CHALLENGE, challenge));
+		} else if (AUTH_MSCHAPV2.equals(getAuthProtocol())) {
+			throw new RuntimeException("Not yet implemented");
 		}
 	}
 
@@ -395,6 +425,16 @@ public class AccessRequest extends RadiusPacket {
 	 * Radius attribute type for CHAP-Challenge attribute.
 	 */
 	private static final int CHAP_CHALLENGE = 60;
+	
+	/**
+	 * Radius attribute type for MSCHAP-v2 Challenge attribute
+	 */
+	private static final int MSCHAPV2_CHALLENGE = 11;
+	
+	/**
+	 * Radius attribute type for MSCHAP-v2 Response attribute
+	 */
+	private static final int MSCHAPV2_RESPONSE = 25;
 	
 	/**
 	 * Logger for logging information about malformed packets
