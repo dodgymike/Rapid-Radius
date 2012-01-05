@@ -1,0 +1,10 @@
+**/.svn
+.svn
+**/target
+**/nbproject
+**/.classpath
+**/.project
+**/.settings
+.settings
+.project
+.metadata
