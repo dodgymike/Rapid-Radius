@@ -60,8 +60,7 @@ public abstract class RadiusServer {
 	 * @exception RadiusException malformed request packet; if this
 	 * exception is thrown, no answer will be sent
 	 */
-	public RadiusPacket accessRequestReceived(AccessRequest accessRequest, InetSocketAddress client)
-	throws RadiusException {
+	public RadiusPacket accessRequestReceived(AccessRequest accessRequest, InetSocketAddress client) throws RadiusException {
 		String plaintext = getUserPassword(accessRequest.getUserName());
 		int type = RadiusPacket.ACCESS_REJECT;
 		if (plaintext != null && accessRequest.verifyPassword(plaintext))

@@ -8,14 +8,20 @@ package org.tinyradius.packet;
 
 import java.security.MessageDigest;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.List;
+
+import net.sf.jradius.util.RadiusUtils;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.tinyradius.attribute.RadiusAttribute;
 import org.tinyradius.attribute.StringAttribute;
+import org.tinyradius.util.Authenticator;
 import org.tinyradius.util.RadiusException;
 import org.tinyradius.util.RadiusUtil;
+
+import com.entersectmobile.util.StringTools;
 
 /**
  * This class represents an Access-Request Radius packet.
@@ -161,6 +167,40 @@ public class AccessRequest extends RadiusPacket {
 	public byte[] getPeerChallenge() {
 		return peerChallenge;
 	}
+	
+	public byte[] getNtResponse() {
+		return ntResponse;
+	}
+
+	/**
+	 * Creates an MSCHAPV2 response
+	 */
+	public void addMSCHAPV2Response(String username, RadiusPacket responsePacket) {
+		String successResponse = createMSCHAPV2Response(username, new byte[] {}, (byte)0x01, getNtResponse(), getPeerChallenge(), getAuthenticator());
+		responsePacket.addAttribute("MS-CHAP2-Success", successResponse);
+	}
+	
+	/**
+	 * Creates an MSCHAPV2 response
+	 */
+	protected String createMSCHAPV2Response(String username, byte[] password, byte ident, byte[] ntResponse, byte[] peerChallenge, byte[] authenticator) {
+		byte[] authResponse = Authenticator.GenerateAuthenticatorResponse(
+			      password,
+			      ntResponse,
+			      peerChallenge,
+			      authenticator,
+			      username.getBytes()
+			);
+
+		System.err.println("authResponse (" + RadiusUtils.byteArrayToHexString(authResponse) + ")");
+		
+			byte[] prefix = new byte[] {ident, 0x53, 0x3d}; // {NULL}S=
+			String successResponse = 
+					RadiusUtils.byteArrayToHexString(prefix).toUpperCase() 
+					+ StringTools.toHexString(RadiusUtils.byteArrayToHexString(authResponse).toUpperCase());
+
+			return successResponse;
+	}
 
 	/**
 	 * Decrypts the User-Password attribute.
@@ -184,8 +224,13 @@ public class AccessRequest extends RadiusPacket {
 		} else if(mschapv2Response != null && mschapv2Challenge != null) {
 			setAuthProtocol(AUTH_MSCHAPV2);
 			this.chapChallenge = mschapv2Challenge.getAttributeData();
-			this.chapPassword = getMSCHAPV2Password(mschapv2Response.getAttributeData());
-			this.peerChallenge = getMSCHAPV2PeerChallenge(mschapv2Response.getAttributeData());
+			if(chapPassword != null) {
+				this.chapPassword = chapPassword.getAttributeData();
+			}
+			
+			List<byte[]> responseComponents = decodeMSCHAPV2Response(mschapv2Response.getAttributeData());
+			this.ntResponse = responseComponents.get(0);
+			this.peerChallenge = responseComponents.get(1);
 		} else if (chapPassword != null && chapChallenge != null) {
 			setAuthProtocol(AUTH_CHAP);
 			this.chapPassword = chapPassword.getAttributeData();
@@ -199,10 +244,19 @@ public class AccessRequest extends RadiusPacket {
 			throw new RadiusException("Access-Request: User-Password or CHAP-Password/CHAP-Challenge missing");
 	}
 
+	protected List<byte[]> decodeMSCHAPV2Response(byte[] attributeData) throws RadiusException {
+		List<byte[]> responseComponents = new ArrayList<byte[]>();
+		
+		responseComponents.add(getMSCHAPV2Password(attributeData));
+		responseComponents.add(getMSCHAPV2PeerChallenge(attributeData));
+		
+		return responseComponents;
+	}
+
 	private byte[] getMSCHAPV2PeerChallenge(byte[] attributeData) throws RadiusException {
 		validateMSCHAP2ResponseAttribute(attributeData);
 		
-		int pcStart = 2; // Should be 4?? 
+		int pcStart = 2;
 		int pcLength = 16;
 		return copyBytes(attributeData, pcStart, pcLength);
 	}
@@ -210,7 +264,7 @@ public class AccessRequest extends RadiusPacket {
 	private byte[] getMSCHAPV2Password(byte[] attributeData) throws RadiusException {
 		validateMSCHAP2ResponseAttribute(attributeData);
 
-		int pStart = 26; // Should be 28??
+		int pStart = 26;
 		int pLength = 24;
 
 		return copyBytes(attributeData, pStart, pLength);
@@ -448,6 +502,11 @@ public class AccessRequest extends RadiusPacket {
 	 * Peer Challenge from a decoded MSCHAPV2 Access-Request
 	 */
 	private byte[] peerChallenge;
+	
+	/**
+	 * NTResponse for MSCHAPV2
+	 */
+	private byte[] ntResponse;
 	
 	/**
 	 * Random generator

@@ -715,7 +715,7 @@ public class RadiusPacket {
 			attr.setDictionary(dictionary);
 		}
 	}
-
+	
 	/**
 	 * Encodes this Radius packet and sends it to the specified output
 	 * stream.
@@ -828,7 +828,7 @@ public class RadiusPacket {
         md5.update(RadiusUtil.getUtf8Bytes(sharedSecret));
         return md5.digest();		
 	}
-
+	
 	/**
 	 * Reads a Radius packet from the given input stream and
 	 * creates an appropiate RadiusPacket descendant object.
