@@ -5,7 +5,7 @@
 	<groupId>org.rapidradius</groupId>
 	<artifactId>rapidradius</artifactId>
 	<name>Rapid Radius Java Radius Library</name>
-	<version>SNAPSHOT</version>
+	<version>2.0.9</version>
 	<url>https://github.com/dodgymike/Rapid-Radius</url>
 	<developers>
 		<developer>
