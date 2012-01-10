@@ -142,8 +142,12 @@ public final class MSCHAP
         return ChallengeResponse(Challenge, PasswordHash);
     }
     
-    private static byte[] GenerateNTResponse(byte[] AuthenticatorChallenge, byte[] PeerChallenge, byte[] UserName, byte[] Password)
-    {
+    public static byte[] GenerateNTResponse(byte[] AuthenticatorChallenge, byte[] PeerChallenge, byte[] UserName, byte[] Password) {
+    	System.err.println("GenerateNTResponse authenticatorChallenge hex (" + RadiusUtils.byteArrayToHexString(AuthenticatorChallenge) + ")");
+    	System.err.println("GenerateNTResponse PeerChallenge hex (" + RadiusUtils.byteArrayToHexString(PeerChallenge) + ")");
+    	System.err.println("GenerateNTResponse UserName hex (" + RadiusUtils.byteArrayToHexString(UserName) + ") string (" + new String(UserName) + ")");
+    	System.err.println("GenerateNTResponse Password hex (" + RadiusUtils.byteArrayToHexString(Password) + ") string (" + new String(Password) + ")");
+    	
         byte Challenge[] = ChallengeHash(PeerChallenge, AuthenticatorChallenge, UserName);
         byte PasswordHash[] = NtPasswordHash(Password);
         return ChallengeResponse(Challenge, PasswordHash);

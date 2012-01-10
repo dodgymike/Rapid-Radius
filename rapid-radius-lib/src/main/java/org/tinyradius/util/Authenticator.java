@@ -39,7 +39,7 @@ public class Authenticator {
 		if(password == null) {
 			password = new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }; 
 		}
-		
+		System.err.println("password (" + new String(password) + ")");
 		byte[] passwordHash = MSCHAP.NtPasswordHash(password);
 		System.err.println("passwordHash (" + RadiusUtils.byteArrayToHexString(passwordHash) + ")");
 		byte[] passwordHashHash = MSCHAP.HashNtPasswordHash(passwordHash);

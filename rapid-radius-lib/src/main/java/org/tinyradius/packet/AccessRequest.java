@@ -11,6 +11,7 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.jradius.util.MSCHAP;
 import net.sf.jradius.util.RadiusUtils;
 
 import org.apache.commons.logging.Log;
@@ -103,6 +104,10 @@ public class AccessRequest extends RadiusPacket {
 		return password;
 	}
 	
+	public byte[] getChapChallenge() {
+		return chapChallenge;
+	}
+
 	/**
 	 * Retrieves the user name from the User-Name attribute.
 	 * @return user name
@@ -151,17 +156,26 @@ public class AccessRequest extends RadiusPacket {
 	 * @param plaintext
 	 * @return true if the password is valid, false otherwise
 	 */
-	public boolean verifyPassword(String plaintext) 
-	throws RadiusException {
+	public boolean verifyPassword(String plaintext) throws RadiusException {
 		if (plaintext == null || plaintext.length() == 0)
 			throw new IllegalArgumentException("password is empty");
 		if (getAuthProtocol().equals(AUTH_CHAP)) {
 			return verifyChapPassword(plaintext);
 		} else if(AUTH_MSCHAPV2.equals(getAuthProtocol())) {
-			throw new RuntimeException("Not yet implemented");
+			return verifyMSChapV2Password(plaintext);
 		} else {
 			return getUserPassword().equals(plaintext);
 		}
+	}
+	
+	public boolean verifyMSChapV2Password(String password) {
+		String ntResponse = RadiusUtils.byteArrayToHexString(getNtResponse());
+		String passwordNtResponse = RadiusUtils.byteArrayToHexString(MSCHAP.GenerateNTResponse(getChapChallenge(), getPeerChallenge(), getUserName().getBytes(), password.getBytes()));
+		
+		System.err.println("ntResponse (" + ntResponse + ")");
+		System.err.println("passwordNtResponse (" + passwordNtResponse + ")");
+		
+		return ntResponse.equals(passwordNtResponse);
 	}
 
 	public byte[] getPeerChallenge() {
@@ -175,8 +189,8 @@ public class AccessRequest extends RadiusPacket {
 	/**
 	 * Creates an MSCHAPV2 response
 	 */
-	public void addMSCHAPV2Response(String username, RadiusPacket responsePacket) {
-		String successResponse = createMSCHAPV2Response(username, new byte[] {}, (byte)0x01, getNtResponse(), getPeerChallenge(), getAuthenticator());
+	public void addMSCHAPV2Response(RadiusPacket responsePacket) {
+		String successResponse = createMSCHAPV2Response(getUserName(), getUserPassword().getBytes(), (byte)0x01, getNtResponse(), getPeerChallenge(), getChapChallenge());
 		responsePacket.addAttribute("MS-CHAP2-Success", successResponse);
 	}
 	
@@ -194,12 +208,14 @@ public class AccessRequest extends RadiusPacket {
 
 		System.err.println("authResponse (" + RadiusUtils.byteArrayToHexString(authResponse) + ")");
 		
-			byte[] prefix = new byte[] {ident, 0x53, 0x3d}; // {NULL}S=
-			String successResponse = 
-					RadiusUtils.byteArrayToHexString(prefix).toUpperCase() 
-					+ StringTools.toHexString(RadiusUtils.byteArrayToHexString(authResponse).toUpperCase());
+		String successResponse = 
+				(char)ident 
+				+ "S=" 
+				+ RadiusUtils.byteArrayToHexString(authResponse).toUpperCase();
 
-			return successResponse;
+		System.err.println("successResponse (" + successResponse + ")");
+
+		return successResponse;
 	}
 
 	/**
