@@ -231,13 +231,40 @@ public class RadiusPacket {
 		if (value == null || value.length() == 0)
 			throw new IllegalArgumentException("value is empty");
 		
+		RadiusAttribute attribute = createRadiusAttributeByType(typeName);
+		
+		attribute.setAttributeValue(value);
+		addAttribute(attribute);
+	}
+	
+	/**
+	 * Adds a Radius attribute to this packet, using bytes
+	 * Uses AttributeTypes to lookup the type code and converts
+	 * the value.
+	 * Can also be used to add sub-attributes.
+	 * @param typeName name of the attribute, for example "NAS-Ip-Address"
+	 * @param value value of the attribute, for example "127.0.0.1"
+	 * @throws IllegalArgumentException if type name is unknown
+	 */
+	public void addOctetAttribute(String typeName, byte[] value) {
+		if (typeName == null || typeName.length() == 0)
+			throw new IllegalArgumentException("type name is empty");
+		if (value == null || value.length == 0)
+			throw new IllegalArgumentException("value is empty");
+		
+		RadiusAttribute attribute = createRadiusAttributeByType(typeName);
+		
+		attribute.setAttributeData(value);
+		addAttribute(attribute);
+	}
+
+	private RadiusAttribute createRadiusAttributeByType(String typeName) {
 		AttributeType type = dictionary.getAttributeTypeByName(typeName);
 		if (type == null)
 			throw new IllegalArgumentException("unknown attribute type '" + typeName + "'");
 
 		RadiusAttribute attribute = RadiusAttribute.createRadiusAttribute(getDictionary(), type.getVendorId(), type.getTypeCode());
-		attribute.setAttributeValue(value);
-		addAttribute(attribute);
+		return attribute;
 	}
 	
 	/**

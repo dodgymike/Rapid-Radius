@@ -6,6 +6,8 @@
  */
 package org.tinyradius.packet;
 
+import java.io.UnsupportedEncodingException;
+import java.security.DigestException;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -21,8 +23,6 @@ import org.tinyradius.attribute.StringAttribute;
 import org.tinyradius.util.Authenticator;
 import org.tinyradius.util.RadiusException;
 import org.tinyradius.util.RadiusUtil;
-
-import com.entersectmobile.util.StringTools;
 
 /**
  * This class represents an Access-Request Radius packet.
@@ -189,9 +189,27 @@ public class AccessRequest extends RadiusPacket {
 	/**
 	 * Creates an MSCHAPV2 response
 	 */
-	public void addMSCHAPV2Response(RadiusPacket responsePacket) {
+	public void addMSCHAPV2Response(RadiusPacket responsePacket, String secret) {
 		String successResponse = createMSCHAPV2Response(getUserName(), getUserPassword().getBytes(), (byte)0x01, getNtResponse(), getPeerChallenge(), getChapChallenge());
 		responsePacket.addAttribute("MS-CHAP2-Success", successResponse);
+		
+		responsePacket.addAttribute("MS-MPPE-Encryption-Policy", new String(new byte[] { 0x00 , 0x00 , 0x00 , 0x01 }));
+		responsePacket.addAttribute("MS-MPPE-Encryption-Type", new String(new byte[] { 0x00 , 0x00 , 0x00 , 0x06 }));
+
+		System.err.println("ntResponse (" + RadiusUtils.byteArrayToHexString(ntResponse) + ")");
+		
+		byte[] ntHashHash = Authenticator.getPasswordHashHash(getUserPassword().getBytes());
+		byte[] mppeSendKey = RadiusUtil.mppeCHAP2GenKeySend128(ntHashHash, getNtResponse());
+		byte[] mppeRecvKey = RadiusUtil.mppeCHAP2GenKeyRecv128(ntHashHash, getNtResponse());
+		
+		System.err.println("mppeSendKey (" + RadiusUtils.byteArrayToHexString(mppeSendKey) + ")");
+		System.err.println("mppeRecvKey (" + RadiusUtils.byteArrayToHexString(mppeRecvKey) + ")");
+
+		byte[] mppeSendKeyEncoded = RadiusUtil.make_tunnel_passwd(mppeSendKey, 1024, secret.getBytes(), getAuthenticator());
+		byte[] mppeRecvKeyEncoded = RadiusUtil.make_tunnel_passwd(mppeRecvKey, 1024, secret.getBytes(), getAuthenticator());
+		
+		responsePacket.addOctetAttribute("MS-MPPE-Send-Key", mppeSendKeyEncoded);
+		responsePacket.addOctetAttribute("MS-MPPE-Recv-Key", mppeRecvKeyEncoded);
 	}
 	
 	/**
@@ -465,6 +483,7 @@ public class AccessRequest extends RadiusPacket {
         System.arraycopy(chapHash, 0, chapPassword, 1, 16);
         return chapPassword;
 	}
+	
 
 	/**
 	 * Verifies a CHAP password against the given plaintext password.

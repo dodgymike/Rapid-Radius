@@ -1,9 +1,13 @@
 package org.tinyradius.packet;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
+
+import java.io.UnsupportedEncodingException;
+
 import net.sf.jradius.util.RadiusUtils;
 
 import org.junit.Test;
+import org.tinyradius.attribute.StringAttribute;
 import org.tinyradius.util.RadiusException;
 
 import com.entersectmobile.util.StringTools;
@@ -99,17 +103,83 @@ public class AccessRequestTest {
 	}
 	
 	@Test
-	public void it_works() {
-		String successResponse = 
-				(char)0x01 
-				+ "S="
-				;
+	public void it_generates_the_correct_bytes() {
+		String ePolicy = new String(new byte[] { 0x00 , 0x00 , 0x00 , 0x01 });
 		
-		System.err.println(RadiusUtils.byteArrayToHexString(successResponse.getBytes()));
+		byte[] compareBytes = { 0x00, 0x00, 0x00, 0x01 };
+		
+		assertEquals(compareBytes.length, ePolicy.getBytes().length);
+		
+		for(int i = 0; i < compareBytes.length; i++) {
+			assertEquals(compareBytes[i], ePolicy.getBytes()[i]);
+		}
 	}
+	
 }
+	
+/*
+	Service-Type = Framed-User
+		06 06  00 00 00 02 
+	Framed-Protocol = PPP
+		07 06  00 00 00 01 
+	Framed-IP-Address = 172.30.1.23
+		08 06  ac 1e 01 17 
+	Framed-Routing = Broadcast-Listen
+		0a 06  00 00 00 03 
+	Framed-Filter-Id = "std.ppp"
+		0b 09  73 74 64 2e 70 70 70 
+	Framed-MTU = 1500
+		0c 06  00 00 05 dc 
+	Framed-Compression = Van-Jacobson-TCP-IP
+		0d 06  00 00 00 01 
+	MS-CHAP2-Success = 0x01533d36333335443745324444323741423636434644334238334445424241364237363443323334343742
+		1a 2d  01 53 3d 36 33 33 35 44 37 45 32 44 44 32 37 41 
+			42 36 36 43 46 44 33 42 38 33 44 45 42 42 41 36 
+			42 37 36 34 43 32 33 34 34 37 42 
+		1a 06  00000137 (311)  1a 2d 01 53 3d 36 33 33 35 44 37 45 32 44 44 32 
+			37 41 42 36 36 43 46 44 33 42 38 33 44 45 42 42 
+			41 36 42 37 36 34 43 32 33 34 34 37 42 
+	MS-MPPE-Recv-Key = 0x4ab23c4820120c37c04fbae1d25f5355
+		11 24  82 1f 79 3c 78 ea 0c 2c 31 67 7c 57 85 15 93 08 
+			af 49 fb 8c b8 fb c5 1e 6a ba 40 a5 fe fd 9e 70 
+			2b 04 
+		1a 06  00000137 (311)  11 24 82 1f 79 3c 78 ea 0c 2c 31 67 7c 57 85 15 
+			93 08 af 49 fb 8c b8 fb c5 1e 6a ba 40 a5 fe fd 
+			9e 70 2b 04 
+	MS-MPPE-Send-Key = 0xd94362cfd43e001b5a3f493e2a1e9da4
+		10 24  88 5e 05 6f 93 f4 e2 4f 41 80 c7 9e a5 9e 36 5f 
+			67 d5 8e a8 49 36 ff 18 30 78 f8 2f 1e 9b 74 e2 
+			75 37 
+		1a 06  00000137 (311)  10 24 88 5e 05 6f 93 f4 e2 4f 41 80 c7 9e a5 9e 
+			36 5f 67 d5 8e a8 49 36 ff 18 30 78 f8 2f 1e 9b 
+			74 e2 75 37 
+	MS-MPPE-Encryption-Policy = Encryption-Allowed
+		07 06  00 00 00 01 
+		1a 06  00000137 (311)  07 06 00 00 00 01 
+	MS-MPPE-Encryption-Types = RC4-40or128-bit-Allowed
+		08 06  00 00 00 06 
+		1a 06  00000137 (311)  08 06 00 00 00 06 
+
+ */
 
 /*
+Vendor-Specific: MS (311)
+  MS-CHAP2-Success: S=A012B7E2233960864D475C91EE87EB941A9A89A6
+Vendor-Specific: MS (311)
+  MS-MPPE-Encryption-Policy: 0001
+Vendor-Specific: MS (311)
+  MS-MPPE-Encryption-Type: 0006
+Vendor-Specific: MS (311)
+  MS-MPPE-Send-Key: 9B0D2CF6A953E86D69B6B8E01389F3B1
+Vendor-Specific: MS (311)
+  MS-MPPE-Recv-Key: 022F36C8FB29A4181E58CB5F0C59B599
+  					4ab23c4820120c37c04fbae1d25f5355
+Framed-IP-Address: 172.30.1.22|#]
+
+ */
+
+/*
+ * 
  * [#|2012-01-06T14:43:58.447+0200|INFO|glassfish3.1.1|org.tinyradius.util.
  * RadiusServer|_ThreadID=40;_ThreadName=Thread-2;|received packet from
  * router1-interconnect.entersect.co.za/172.30.30.1:45302 on local address

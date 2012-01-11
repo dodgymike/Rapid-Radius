@@ -39,12 +39,7 @@ public class Authenticator {
 		if(password == null) {
 			password = new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }; 
 		}
-		System.err.println("password (" + new String(password) + ")");
-		byte[] passwordHash = MSCHAP.NtPasswordHash(password);
-		System.err.println("passwordHash (" + RadiusUtils.byteArrayToHexString(passwordHash) + ")");
-		byte[] passwordHashHash = MSCHAP.HashNtPasswordHash(passwordHash);
-		System.err.println("passwordHashHash (" + RadiusUtils.byteArrayToHexString(passwordHashHash) + ")");
-		System.err.println("ntResponse (" + RadiusUtils.byteArrayToHexString(ntResponse) + ")");
+		byte[] passwordHashHash = getPasswordHashHash(password);
 
 		IMessageDigest md = HashFactory.getInstance("SHA-1");
 		md.update(passwordHashHash, 0, 16);
@@ -66,6 +61,15 @@ public class Authenticator {
 		System.err.println("digest (" + RadiusUtils.byteArrayToHexString(authenticatorResponse) + ")");
 
 		return authenticatorResponse;
+	}
+
+	public static byte[] getPasswordHashHash(byte[] password) {
+		System.err.println("password (" + new String(password) + ")");
+		byte[] passwordHash = MSCHAP.NtPasswordHash(password);
+		System.err.println("passwordHash (" + RadiusUtils.byteArrayToHexString(passwordHash) + ")");
+		byte[] passwordHashHash = MSCHAP.HashNtPasswordHash(passwordHash);
+		System.err.println("passwordHashHash (" + RadiusUtils.byteArrayToHexString(passwordHashHash) + ")");
+		return passwordHashHash;
 	}
 
 	public static void main(String[] args) {

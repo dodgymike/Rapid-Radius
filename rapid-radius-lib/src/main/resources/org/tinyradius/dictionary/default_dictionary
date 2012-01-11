@@ -264,8 +264,8 @@ VENDORATTR      311   MS-CHAP-MPPE-Keys 12	string
 VENDORATTR      311   MS-BAP-Usage 13	string
 VENDORATTR      311   MS-Link-Utilization-Threshold 14	string
 VENDORATTR      311   MS-Link-Drop-Time-Limit 15	string
-VENDORATTR      311   MS-MPPE-Send-Key 16	string
-VENDORATTR      311   MS-MPPE-Recv-Key 17	string
+VENDORATTR      311   MS-MPPE-Send-Key 16	octet
+VENDORATTR      311   MS-MPPE-Recv-Key 17	octet
 VENDORATTR      311   MS-RAS-Version 18	string
 VENDORATTR      311   MS-Old-ARAP-Password 19	string
 VENDORATTR      311   MS-New-ARAP-Password 20	string
