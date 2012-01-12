@@ -113,6 +113,12 @@ public class RadiusUtil {
 		return hex.toString();
 	}
 
+	/**
+	 * Concatenate two byte arrays
+	 * @param a
+	 * @param b
+	 * @return
+	 */
 	public static byte[] concatenateByteArrays(byte a[], byte b[]) {
 		byte rv[] = new byte[a.length + b.length];
 
@@ -124,6 +130,10 @@ public class RadiusUtil {
 
 	/**
 	 * Generate the MPPE Master key
+	 * @see https://tools.ietf.org/html/rfc3079#section-3 
+	 * @param ntHashHash
+	 * @param ntResponse
+	 * @return
 	 */
 	public static byte[] generateMPPEMasterKey(byte[] ntHashHash,
 			byte[] ntResponse) {
@@ -142,7 +152,12 @@ public class RadiusUtil {
 	}
 
 	/**
-	 * Generate the MPPE AssymetricStartKey
+	 * Generate the MPPE Asymmetric start key
+	 * @see https://tools.ietf.org/html/rfc3079#section-3 
+	 * @param masterKey
+	 * @param keyLength
+	 * @param isSend
+	 * @return
 	 */
 	public static byte[] generateMPPEAssymetricStartKey(byte[] masterKey,
 			int keyLength, boolean isSend) {
@@ -163,13 +178,26 @@ public class RadiusUtil {
 		return rv;
 	}
 
-	public static byte[] mppeCHAP2GenKeySend128(byte[] ntHashHash,
-			byte[] ntResponse) {
+	/**
+	 * Generate the MPPE Send Key (Server)
+	 * @see https://tools.ietf.org/html/rfc3079#section-3 
+	 * @param ntHashHash
+	 * @param ntResponse
+	 * @return
+	 */
+	public static byte[] mppeCHAP2GenKeySend128(byte[] ntHashHash, byte[] ntResponse) {
 		byte[] masterKey = generateMPPEMasterKey(ntHashHash, ntResponse);
 
 		return generateMPPEAssymetricStartKey(masterKey, 16, true);
 	}
 
+	/**
+	 * Generate the MPPE Receive Key (Server)
+	 * @see https://tools.ietf.org/html/rfc3079#section-3 
+	 * @param ntHashHash
+	 * @param ntResponse
+	 * @return
+	 */
 	public static byte[] mppeCHAP2GenKeyRecv128(byte[] ntHashHash,
 			byte[] ntResponse) {
 		byte[] masterKey = generateMPPEMasterKey(ntHashHash, ntResponse);
@@ -177,7 +205,21 @@ public class RadiusUtil {
 		return generateMPPEAssymetricStartKey(masterKey, 16, false);
 	}
 
-	public static byte[] make_tunnel_passwd(byte[] input, int room, byte[] secret, byte[] vector) {
+	/**
+	 * Encrypt an MPPE password
+	 * Adapted from FreeRadius src/lib/radius.x:make_tunnel_password
+	 * @see ??
+	 * @param input
+	 * 			the data to encrypt
+	 * @param room
+	 * 			not sure - just set it to something greater than 255
+	 * @param secret
+	 * 			the Radius secret for this packet
+	 * @param vector
+	 * 			the auth challenge
+	 * @return
+	 */
+	public static byte[] generateEncryptedMPPEPassword(byte[] input, int room, byte[] secret, byte[] vector) {
 		final int authVectorLength = 16;
 		final int authPasswordLength = authVectorLength;
 		final int maxStringLength = 254;
@@ -300,43 +342,4 @@ public class RadiusUtil {
 		}
 		return md5Digest;
 	}
-
-	/**
-	 * Generates an MS-MPPE-Recv-Key as per rfc2548
-	 * 
-	 * @return the recv key
-	 */
-	/*
-	 * public static byte[] generateMPPEKey(String sharedSecret) { // generate a
-	 * salt byte[] salt = random.generateSeed(2); // the leftmost bit of the
-	 * SALT *must* be set salt[0] |= (byte)0x80;
-	 * 
-	 * // the key byte[] key = random.generateSeed(8);
-	 * 
-	 * // key plaintext is key length (1) + key (8) + padding (7) byte[]
-	 * keyPlaintext = new byte[16]; // key length keyPlaintext[0] = 8; // copy
-	 * the key for(int i = 0; i < 8; i++) { keyPlaintext[i + 1] = key[i]; } //
-	 * padding for(int i = 9; i < 16; i++) { keyPlaintext[i] = 0x00; }
-	 * 
-	 * // MS-MPPE-Recv-Key = 0x228522099a3c68461bc731f135a9d551 //
-	 * MS-MPPE-Send-Key = 0x01eb3af6d04c00e5f1d2cb76a4b6e967
-	 * 
-	 * // generate b(1) MessageDigest md5 = getMd5Digest(); md5.reset();
-	 * md5.update(sharedSecret.getBytes()); md5.update(getAuthenticator());
-	 * md5.update(salt);
-	 * 
-	 * byte[] b = new byte[16]; try { if(md5.digest(b, 0, 16) != 16) { throw new
-	 * RuntimeException("Fatal exception generating recv key"); } } catch
-	 * (DigestException e) { throw new
-	 * RuntimeException("Fatal exception generating recv key", e); }
-	 * 
-	 * // XOR the results byte C[] = new byte[16];
-	 * 
-	 * for(int i = 0; i < 16; i++) { C[i] = (byte)(keyPlaintext[i] ^ b[i]); }
-	 * 
-	 * // make the full return buffer byte[] rv =
-	 * RadiusUtil.concatenateByteArrays(salt, C);
-	 * 
-	 * return rv; }
-	 */
 }

@@ -67,7 +67,7 @@ public class RadiusUtilTest {
 		
 		byte authenticator[] = {(byte)0x41, (byte)0x8B, (byte)0x13, (byte)0x69, (byte)0x5D, (byte)0x4C, (byte)0xF9, (byte)0x17, (byte)0x54, (byte)0x3E, (byte)0xDF, (byte)0xAF, (byte)0x93, (byte)0xFE, (byte)0x98, (byte)0x64, };
 		
-		byte mppeKeyEncrypted[] = RadiusUtil.make_tunnel_passwd(mppeKey, 1024, "test12345".getBytes(), authenticator);
+		byte mppeKeyEncrypted[] = RadiusUtil.generateEncryptedMPPEPassword(mppeKey, 1024, "test12345".getBytes(), authenticator);
 		
 		System.err.println("passwd (" + RadiusUtil.getHexString(mppeKeyEncrypted) + ")");
 		

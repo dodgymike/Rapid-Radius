@@ -6,8 +6,6 @@
  */
 package org.tinyradius.packet;
 
-import java.io.UnsupportedEncodingException;
-import java.security.DigestException;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -108,6 +106,14 @@ public class AccessRequest extends RadiusPacket {
 		return chapChallenge;
 	}
 
+	public byte[] getPeerChallenge() {
+		return peerChallenge;
+	}
+	
+	public byte[] getNtResponse() {
+		return ntResponse;
+	}
+
 	/**
 	 * Retrieves the user name from the User-Name attribute.
 	 * @return user name
@@ -168,6 +174,11 @@ public class AccessRequest extends RadiusPacket {
 		}
 	}
 	
+	/**
+	 * Verify that an MSCHAPV2 password is valid
+	 * @param password
+	 * @return
+	 */
 	public boolean verifyMSChapV2Password(String password) {
 		String ntResponse = RadiusUtils.byteArrayToHexString(getNtResponse());
 		String passwordNtResponse = RadiusUtils.byteArrayToHexString(MSCHAP.GenerateNTResponse(getChapChallenge(), getPeerChallenge(), getUserName().getBytes(), password.getBytes()));
@@ -176,14 +187,6 @@ public class AccessRequest extends RadiusPacket {
 		System.err.println("passwordNtResponse (" + passwordNtResponse + ")");
 		
 		return ntResponse.equals(passwordNtResponse);
-	}
-
-	public byte[] getPeerChallenge() {
-		return peerChallenge;
-	}
-	
-	public byte[] getNtResponse() {
-		return ntResponse;
 	}
 
 	/**
@@ -205,15 +208,22 @@ public class AccessRequest extends RadiusPacket {
 		System.err.println("mppeSendKey (" + RadiusUtils.byteArrayToHexString(mppeSendKey) + ")");
 		System.err.println("mppeRecvKey (" + RadiusUtils.byteArrayToHexString(mppeRecvKey) + ")");
 
-		byte[] mppeSendKeyEncoded = RadiusUtil.make_tunnel_passwd(mppeSendKey, 1024, secret.getBytes(), getAuthenticator());
-		byte[] mppeRecvKeyEncoded = RadiusUtil.make_tunnel_passwd(mppeRecvKey, 1024, secret.getBytes(), getAuthenticator());
+		byte[] mppeSendKeyEncoded = RadiusUtil.generateEncryptedMPPEPassword(mppeSendKey, 1024, secret.getBytes(), getAuthenticator());
+		byte[] mppeRecvKeyEncoded = RadiusUtil.generateEncryptedMPPEPassword(mppeRecvKey, 1024, secret.getBytes(), getAuthenticator());
 		
 		responsePacket.addOctetAttribute("MS-MPPE-Send-Key", mppeSendKeyEncoded);
 		responsePacket.addOctetAttribute("MS-MPPE-Recv-Key", mppeRecvKeyEncoded);
 	}
-	
+
 	/**
-	 * Creates an MSCHAPV2 response
+	 * Creates an MSCHAPV2 success response
+	 * @param username
+	 * @param password
+	 * @param ident
+	 * @param ntResponse
+	 * @param peerChallenge
+	 * @param authenticator
+	 * @return
 	 */
 	protected String createMSCHAPV2Response(String username, byte[] password, byte ident, byte[] ntResponse, byte[] peerChallenge, byte[] authenticator) {
 		byte[] authResponse = Authenticator.GenerateAuthenticatorResponse(
