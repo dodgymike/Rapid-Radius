@@ -1,16 +1,10 @@
 package org.tinyradius.packet;
 
-import static org.junit.Assert.*;
-
-import java.io.UnsupportedEncodingException;
-
+import static org.junit.Assert.assertEquals;
 import net.sf.jradius.util.RadiusUtils;
 
 import org.junit.Test;
-import org.tinyradius.attribute.StringAttribute;
 import org.tinyradius.util.RadiusException;
-
-import com.entersectmobile.util.StringTools;
 
 public class AccessRequestTest {
 	@Test
@@ -91,10 +85,9 @@ public class AccessRequestTest {
 				authenticatorChallenge);
 
 		byte[] expectedDigest = {(byte)0xDB, (byte)0x28, (byte)0xF4, (byte)0xEC, (byte)0x5E, (byte)0xD9, (byte)0x3, (byte)0x2A, (byte)0x40, (byte)0x75, (byte)0xEB, (byte)0x31, (byte)0x22, (byte)0xB6, (byte)0x69, (byte)0xA6, (byte)0x9B, (byte)0x7E, (byte)0xE1, (byte)0xCC, };
-		System.err.println("expectedDigest (" + StringTools.toHexString(expectedDigest) + ")");
+		System.err.println("expectedDigest (" + RadiusUtils.byteArrayToHexString(expectedDigest) + ")");
 		
 		System.err.println("mschapResponse (" + mschapResponse + ")");
-		System.err.println("mschapResponse 2 (" + StringTools.toHexString(mschapResponse) + ")");
 
 		byte[] response = {0x01, 0x53, 0x3D, 0x44, 0x42, 0x32, 0x38, 0x46, 0x34, 0x45, 0x43, 0x35, 0x45, 0x44, 0x39, 0x30, 0x33, 0x32, 0x41, 0x34, 0x30, 0x37, 0x35, 0x45, 0x42, 0x33, 0x31, 0x32, 0x32, 0x42, 0x36, 0x36, 0x39, 0x41, 0x36, 0x39, 0x42, 0x37, 0x45, 0x45, 0x31, 0x43, 0x43, };
 		System.err.println("response (" + RadiusUtils.byteArrayToHexString(response) + ")");
