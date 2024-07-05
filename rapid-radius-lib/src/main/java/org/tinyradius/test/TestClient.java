@@ -38,7 +38,7 @@ public class TestClient {
 
 		// 1. Send Access-Request
 		AccessRequest ar = new AccessRequest(user, pass);
-		ar.setAuthProtocol(AccessRequest.AUTH_PAP); // or AUTH_CHAP
+		ar.setAuthProtocol(AccessRequest.MS_MFA); // or AUTH_CHAP
 		ar.addAttribute("NAS-Identifier", "this.is.my.nas-identifier.de");
 		ar.addAttribute("NAS-IP-Address", "192.168.0.100");
 		ar.addAttribute("Service-Type", "Login-User");

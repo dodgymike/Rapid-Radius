@@ -62,16 +62,16 @@ TinyRadius build file
 		<delete file="${dist}/TinyRadius-${version}.tar"/>
 	</target>
 	
-	<target name="sourceforge" depends="dist">
-	    <ftp server="upload.sourceforge.net"
-	         remotedir="incoming"
-	         userid="anonymous"
-	         password=""
-	         verbose="yes"
-	         passive="yes">
-	    	<fileset file="${dist}/TinyRadius-${version}.tar.gz"/>
-	    </ftp>
-	</target>
+<!--	<target name="sourceforge" depends="dist">-->
+<!--	    <ftp server="upload.sourceforge.net"-->
+<!--	         remotedir="incoming"-->
+<!--	         userid="anonymous"-->
+<!--	         password=""-->
+<!--	         verbose="yes"-->
+<!--	         passive="yes">-->
+<!--	    	<fileset file="${dist}/TinyRadius-${version}.tar.gz"/>-->
+<!--	    </ftp>-->
+<!--	</target>-->
 	
 	<!-- requires the passphrase of the SSH private key
 	to be cached in the SSH agent -->

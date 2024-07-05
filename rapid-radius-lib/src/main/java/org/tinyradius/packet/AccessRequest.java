@@ -31,7 +31,9 @@ public class AccessRequest extends RadiusPacket {
 	 * Passphrase Authentication Protocol
 	 */
 	public static final String AUTH_PAP = "pap";
-	
+
+	public static final String MS_MFA = "ms-mfa";
+
 	/**
 	 * Challenged Handshake Authentication Protocol
 	 */
@@ -147,6 +149,7 @@ public class AccessRequest extends RadiusPacket {
 						authProtocol.equals(AUTH_PAP) 
 						|| authProtocol.equals(AUTH_CHAP)
 						|| authProtocol.equals(AUTH_MSCHAPV2)
+						|| authProtocol.equals(MS_MFA)
 					)
 		) {
 			this.authProtocol = authProtocol;
@@ -250,7 +253,7 @@ public class AccessRequest extends RadiusPacket {
 	 * Decrypts the User-Password attribute.
 	 * @see org.tinyradius.packet.RadiusPacket#decodeRequestAttributes(java.lang.String)
 	 */
-	protected void decodeRequestAttributes(String sharedSecret) 
+	protected void decodeRequestAttributes(String sharedSecret)
 	throws RadiusException {
 		// detect auth protocol 
 		RadiusAttribute userPassword = getAttribute(USER_PASSWORD);
@@ -284,7 +287,9 @@ public class AccessRequest extends RadiusPacket {
             setAuthProtocol(AUTH_CHAP);
             this.chapPassword = chapPassword.getAttributeData();
             this.chapChallenge = getAuthenticator();
-		} else
+		} else if (userPassword == null){
+            setAuthProtocol(MS_MFA);
+		}else
 			throw new RadiusException("Access-Request: User-Password or CHAP-Password/CHAP-Challenge missing");
 	}
 
@@ -338,7 +343,7 @@ public class AccessRequest extends RadiusPacket {
 	 * Sets and encrypts the User-Password attribute.
 	 * @see org.tinyradius.packet.RadiusPacket#encodeRequestAttributes(java.lang.String)
 	 */
-	protected void encodeRequestAttributes(String sharedSecret) {
+	protected void encodeRequestAttributes(String sharedSecret) throws RadiusException {
 		if (password == null || password.length() == 0)
 			return;
 			// ok for proxied packets whose CHAP password is already encrypted

@@ -549,8 +549,8 @@ public class RadiusPacket {
 	 * @param sharedSecret shared secret to be used to encode this packet
 	 * @exception IOException communication error
 	 */
-	public void encodeRequestPacket(OutputStream out, String sharedSecret) 
-	throws IOException {
+	public void encodeRequestPacket(OutputStream out, String sharedSecret)
+			throws IOException, RadiusException {
 		encodePacket(out, sharedSecret, null);
 	}
 	
@@ -562,8 +562,8 @@ public class RadiusPacket {
 	 * @param request Radius request packet
 	 * @exception IOException communication error
 	 */
-	public void encodeResponsePacket(OutputStream out, String sharedSecret, RadiusPacket request) 
-	throws IOException {
+	public void encodeResponsePacket(OutputStream out, String sharedSecret, RadiusPacket request)
+			throws IOException, RadiusException {
 		if (request == null)
 			throw new NullPointerException("request cannot be null");
 		encodePacket(out, sharedSecret, request);
@@ -753,8 +753,8 @@ public class RadiusPacket {
 	 * @exception IOException communication error
 	 * @exception RuntimeException if required packet data has not been set 
 	 */
-	protected void encodePacket(OutputStream out, String sharedSecret, RadiusPacket request) 
-	throws IOException {
+	protected void encodePacket(OutputStream out, String sharedSecret, RadiusPacket request)
+			throws IOException, RadiusException {
 		// check shared secret
 		if (sharedSecret == null || sharedSecret.length() == 0)
 			throw new RuntimeException("no shared secret has been set");
@@ -801,7 +801,7 @@ public class RadiusPacket {
 	 * authenticator.
 	 * @param sharedSecret
 	 */
-	protected void encodeRequestAttributes(String sharedSecret) {
+	protected void encodeRequestAttributes(String sharedSecret) throws RadiusException {
 	}
 	
 	/**

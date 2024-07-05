@@ -206,7 +206,7 @@ extends RadiusServer {
      * @throws IOException
      */
     protected void proxyPacket(RadiusPacket packet, RadiusProxyConnection proxyConnection)
-    throws IOException {    	
+			throws IOException, RadiusException {
     	synchronized(RadiusProxy.class) {
         	// add Proxy-State attribute
     		proxyIndex++;

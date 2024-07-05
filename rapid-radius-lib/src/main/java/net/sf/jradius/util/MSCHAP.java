@@ -103,7 +103,7 @@ public final class MSCHAP
         IBlockCipher cipher = CipherFactory.getInstance("DES");
         Map attributes = new HashMap();
 
-        attributes.put(IBlockCipher.CIPHER_BLOCK_SIZE, new Integer(8));
+        attributes.put(IBlockCipher.CIPHER_BLOCK_SIZE, 8);
         attributes.put(IBlockCipher.KEY_MATERIAL, szParityKey);
 
         try
